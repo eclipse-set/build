@@ -13,15 +13,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.MavenArtifactRepository;
-import org.apache.maven.artifact.repository.layout.ArtifactRepositoryLayout;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -30,28 +25,30 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.RepositorySystem;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.shared.transfer.artifact.DefaultArtifactCoordinate;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResult;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 
-@Mojo(name = "fetch", requiresProject = false, threadSafe = true, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo(name = "fetch", requiresProject = false, threadSafe = true, defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class MavenRootfilesMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", required = true, readonly = true)
 	private MavenSession session;
-	
+
+	@Parameter(defaultValue = "${project}", readonly = true)
+	private MavenProject project;
+
 	@Component
 	private ArtifactResolver artifactResolver;
 
 	@Component
 	private ArtifactHandlerManager artifactHandlerManager;
-
-	@Component(role = ArtifactRepositoryLayout.class)
-	private Map<String, ArtifactRepositoryLayout> repositoryLayouts;
 
 	@Component
 	private RepositorySystem repositorySystem;
@@ -74,42 +71,26 @@ public class MavenRootfilesMojo extends AbstractMojo {
 	@Parameter(property = "outPath", required = true)
 	private String outPath;
 
+	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
+	private RepositorySystemSession repoSession;
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		ArtifactRepositoryPolicy always = new ArtifactRepositoryPolicy(true,
-				ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-
-		ArtifactRepositoryLayout layout = repositoryLayouts.get("default");
-		List<ArtifactRepository> repoList = List
-				.of(new MavenArtifactRepository(serverId, serverUrl, layout, always, always));
-
 		try {
-			ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
-					session.getProjectBuildingRequest());
+			org.eclipse.aether.artifact.Artifact artifact = new DefaultArtifact(groupId, artifactId, "root", "zip",
+					version);
 
-			Settings settings = session.getSettings();
-			repositorySystem.injectMirror(repoList, settings.getMirrors());
-			repositorySystem.injectProxy(repoList, settings.getProxies());
-			repositorySystem.injectAuthentication(repoList, settings.getServers());
-
-			buildingRequest.setRemoteRepositories(repoList);
-
-			DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-			coordinate.setGroupId(groupId);
-			coordinate.setArtifactId(artifactId);
-			coordinate.setVersion(version);
-			coordinate.setClassifier("root");
-			coordinate.setExtension("zip");
-
-			getLog().info("Resolving " + coordinate);
-			ArtifactResult artifactResult = artifactResolver.resolveArtifact(buildingRequest, coordinate);
-
+			List<RemoteRepository> remoteRepositories = repositorySystem.newResolutionRepositories(repoSession,
+					List.of(new RemoteRepository.Builder(serverId, "default", serverUrl).build()));
+			getLog().info("Resolving " + artifact);
+			ArtifactRequest resolveRequest = new ArtifactRequest(artifact, remoteRepositories, null);
+			ArtifactResult artifactResult = repositorySystem.resolveArtifact(repoSession, resolveRequest);
 			getLog().info("Extracting " + artifactResult.getArtifact().getFile().getAbsolutePath());
 			unzip(artifactResult.getArtifact().getFile(), new File(outPath));
-		} catch (ArtifactResolverException e) {
-			throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
 		} catch (IOException e) {
 			throw new MojoExecutionException("Couldn't extract artifact: " + e.getMessage(), e);
+		} catch (ArtifactResolutionException e) {
+			throw new MojoExecutionException("Couldn't download artifact: " + e.getMessage(), e);
 		}
 	}
 
