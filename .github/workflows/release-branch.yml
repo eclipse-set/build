@@ -1,0 +1,49 @@
+# This workflow will create a new release branch
+
+name: Release Branch
+    
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version. Format: <major>.<minor>'
+        type: string
+        required: true
+      target:
+        description: 'Path to target platform'
+        type: string
+        required: true
+
+jobs:
+  release-branch:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+    - name: Fail if branch is not main
+      if: github.ref != 'refs/heads/main'
+      run: |
+        echo "This workflow should not be triggered on a branch other than main"
+        exit 1
+        
+    - uses: actions/checkout@v3
+
+    - name: Bump versions
+      uses: eclipse-set/build/.github/actions/set-version@main
+      with:
+        version: ${{ inputs.version }}.0-SNAPSHOT
+        target: ${{ inputs.target }}
+     
+    - name: Push to Github
+      run: |
+        git config user.name 'eclipse-set-bot'
+        git config user.email '117744039+eclipse-set-bot@users.noreply.github.com'
+        git status
+        git branch -D release/${{ inputs.version }} || true
+        git checkout -b release/${{ inputs.version }}
+        git status
+        git add -A
+        git commit --allow-empty -m "Prepare development branch for ${{ inputs.version }}" 
+        git status
+        git push -f -u origin release/${{ inputs.version }}
+        git status

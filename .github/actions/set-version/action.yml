@@ -1,0 +1,45 @@
+name: 'Update version'
+description: 'Updates the version for the local maven repository as well as all Eclipse SET dependencies in the specified target platform'
+inputs:
+  version:
+    description: 'Release version. Format: <major>.<minor>.<patch>(.<tag>)'
+    required: true
+  target:
+    description: 'Path to target platform'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: temurin
+        server-id: set-github
+        cache: maven
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
+      with:
+        maven-version: 3.9.3
+
+    - name: Set Maven Version
+      shell: bash
+      run: mvn -B tycho-versions:set-version -DnewVersion=${{ inputs.version }}
+
+    - name: Install xmlstarlet
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xmlstarlet
+
+    - name: Update target platform
+      shell: bash
+      run: |
+        xmlstarlet ed --inplace \
+          -u "target/locations/location/dependencies/dependency[groupId='org.eclipse.set']/version" \
+          -v '${{ inputs.version }}' \
+          -u "/target/locations/location/repositories/repository/url[starts-with(., 'https://maven.pkg.github.com/eclipse-set/')]" \
+          -x 'concat("https://maven.pkg.github.com/${{ github.repository_owner }}/", substring-after(., "https://maven.pkg.github.com/eclipse-set/"))' \
+          ${{ inputs.target }}
