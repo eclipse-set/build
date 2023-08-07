@@ -15,7 +15,7 @@ on:
         required: true
 
 jobs:        
-  release-branch:
+  release-tag:
     runs-on: ubuntu-latest
     permissions:
       contents: write
