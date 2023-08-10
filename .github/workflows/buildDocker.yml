@@ -1,0 +1,39 @@
+# This workflow will build and push Docker images into ghcr.io/eclipse-set
+name: 'Build and push Docker image'
+
+on: workflow_dispatch
+
+env:
+  REGISTRY: ghcr.io
+  ORGANISATION: ${{ github.repository_owner }}
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Set Organisation name to lower case
+        run: |
+          echo "ORGANISATION=${GITHUB_REPOSITORY_OWNER,,}" >> ${GITHUB_ENV}
+        
+      - name: Checkout repository
+        uses: actions/checkout@v3
+          
+      - name: Login into the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build & Push Rust image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/rust/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.ORGANISATION }}/rust-x86_64-pc-windows-gnu:latest
+
