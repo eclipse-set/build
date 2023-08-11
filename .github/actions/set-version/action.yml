@@ -7,6 +7,10 @@ inputs:
   target:
     description: 'Path to target platform'
     required: true
+  pom:
+    description: 'Path to pom.xml'
+    required: false
+    default: 'pom.xml'
 
 runs:
   using: "composite"
@@ -26,7 +30,7 @@ runs:
 
     - name: Set Maven Version
       shell: bash
-      run: mvn -B tycho-versions:set-version -DnewVersion=${{ inputs.version }}
+      run: mvn -f ${{ inputs.pom }} -B tycho-versions:set-version -DnewVersion=${{ inputs.version }}
 
     - name: Install xmlstarlet
       shell: bash

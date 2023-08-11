@@ -13,6 +13,11 @@ on:
         description: 'Path to target platform'
         type: string
         required: true
+      pom:
+        description: 'Path to pom.xml. Defaults to pom.xml in working directory'
+        type: string
+        required: false
+        default: 'pom.xml'
 
 jobs:        
   release-tag:
@@ -33,6 +38,7 @@ jobs:
       with:
         version: ${{ inputs.version }}
         target: ${{ inputs.target }}
+        pom: ${{ inputs.pom }}
      
     - name: Push to Github
       run: |
