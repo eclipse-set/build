@@ -31,7 +31,7 @@ jobs:
     - name: Bump versions
       uses: eclipse-set/build/.github/actions/set-version@main
       with:
-        version: ${{ inputs.version }}.0-SNAPSHOT
+        version: ${{ inputs.version }}.1-SNAPSHOT
         target: ${{ inputs.target }}
      
     - name: Push to Github
