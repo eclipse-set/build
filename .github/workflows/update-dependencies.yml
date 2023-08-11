@@ -1,0 +1,31 @@
+name: Update DEPENDENCIES file
+    
+on:
+  workflow_call:
+    inputs:
+      pom:
+        description: 'Path to pom.xml'
+        type: string
+        required: false
+        default: 'pom.xml'
+
+jobs:        
+  release-tag:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write  
+    - uses: actions/checkout@v3
+
+    - name: Bump versions
+      uses: eclipse-set/build/.github/actions/update-dependency-file@main
+      with:
+        pom: ${{ inputs.pom }}
+     
+    - name: Push to Github
+      run: |
+        git config user.name 'eclipse-set-bot'
+        git config user.email 'set-bot@eclipse.org'
+        git status
+        git add DEPENDENCIES || true
+        git commit -m "Update DEPENDENCIES" || true
+        git push || true

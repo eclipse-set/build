@@ -43,3 +43,8 @@ runs:
           -u "/target/locations/location/repositories/repository/url[starts-with(., 'https://maven.pkg.github.com/eclipse-set/')]" \
           -x 'concat("https://maven.pkg.github.com/${{ github.repository_owner }}/", substring-after(., "https://maven.pkg.github.com/eclipse-set/"))' \
           ${{ inputs.target }}
+
+    - name: Update DEPENDENCIES
+      uses: eclipse-set/build/.github/actions/update-dependency-file@main
+      with:
+        pom: ${{ inputs.pom }}
