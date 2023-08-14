@@ -16,7 +16,7 @@ on:
 
 jobs:        
   release-tag:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
@@ -25,7 +25,11 @@ jobs:
       run: |
         echo "This workflow should not be triggered on main"
         exit 1
-    
+        
+    - name: Check version format
+      if: github.ref == 'refs/heads/main'
+      run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+\.\d+(\.[a-z0-9]+)?$'
+
     - uses: actions/checkout@v3
 
     - name: Bump versions
@@ -42,8 +46,8 @@ jobs:
         git add -A
         git commit --allow-empty -m "Release ${{ inputs.version }}" 
         git status
-        git tag -d release/${{ inputs.version }} || true
-        git tag release/${{ inputs.version }}
+        git tag -d v${{ inputs.version }} || true
+        git tag v${{ inputs.version }}
         git status
         git push -f -u origin release/${{ inputs.version }}
         git status
