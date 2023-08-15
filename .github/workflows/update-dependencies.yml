@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Bump versions
+    - name: Update DEPENDENCIES
       uses: eclipse-set/build/.github/actions/update-dependency-file@main
       with:
         pom: ${{ inputs.pom }}
