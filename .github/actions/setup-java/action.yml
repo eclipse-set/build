@@ -1,5 +1,10 @@
 name: 'Setup Java'
 description: 'Adds Java and Maven preconfigured for Eclipse SET'
+inputs:
+  settings:
+    description: 'Path to Maven settings.xml to copy. Only copied if the file exists.'
+    required: false
+    default: '.github/settings.xml'
 runs:
   using: "composite"
   steps:
@@ -19,6 +24,6 @@ runs:
     - name: Copy repository local maven settings
       shell: bash
       run: |
-        if test -f ".github/settings.xml"; then
-          cp .github/settings.xml ~/.m2/settings.xml
+        if test -f "${{ inputs.settings }}"; then
+          cp ${{ inputs.settings }} ~/.m2/settings.xml
         fi
