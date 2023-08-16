@@ -5,6 +5,7 @@ inputs:
     description: 'Path to Maven settings.xml to copy. Only copied if the file exists.'
     required: false
     default: '.github/settings.xml'
+
 runs:
   using: "composite"
   steps:
