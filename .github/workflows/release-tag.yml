@@ -54,5 +54,5 @@ jobs:
         git tag -d v${{ inputs.version }} || true
         git tag v${{ inputs.version }}
         git status
-        git push -f -u origin release/${{ inputs.version }}
+        git push -f -u origin v${{ inputs.version }}
         git status
