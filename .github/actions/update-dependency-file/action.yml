@@ -6,21 +6,11 @@ inputs:
     required: false
     default: 'pom.xml'
 
-runs:
+runs: 
   using: "composite"
   steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: temurin
-        server-id: set-github
-        cache: maven
-
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
-      with:
-        maven-version: 3.9.3
+    - name: Set up Java
+      uses: eclipse-set/build/.github/actions/setup-java@main
 
     - name: Process maven dependencies
       shell: bash
