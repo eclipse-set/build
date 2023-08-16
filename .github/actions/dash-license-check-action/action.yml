@@ -53,6 +53,8 @@ runs:
     - name: Process maven dependencies
       shell: bash
       run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true dependency:list -DappendOutput=true -DoutputFile=${{ github.workspace }}/maven.deps
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       
     - id: license-check-with-review-request
       shell: bash {0} # do not fail-fast
