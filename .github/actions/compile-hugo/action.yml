@@ -1,43 +1,20 @@
-name: 'Compiled Hugo'
-description: 'Build Hugo to static web page, then store artifact'
-inputs:
-  artifact-name:
-    description: 'Name of artifact'
-    required: true
-  directory:
-    description: 'Directory of hugo project'
-    required: true
-  retention-day:
-    description: 'Artifact is retained for 1 days by default'
-    required: false
-    default: 1
+name: 'Setup Asciidoctor'
+description: 'Installs Asciidoctor, including Hugo and Ruby'
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup Hugo
-      uses: peaceiris/actions-hugo@v2
+      uses: peaceiris/actions-hugo@16361eb4acea8698b220b76c0d4e84e1fd22c61d # v2.6.0
       with:
         hugo-version: '0.101.0'
         extended: true
     
     - name: Setup Ruby
-      uses: ruby/setup-ruby@v1.152.0
+      uses: ruby/setup-ruby@250fcd6a742febb1123a77a841497ccaa8b9e939 # v1.152.0
       with:
         ruby-version: 3.2
     
-    - name: Install asciidoctor
+    - name: Install Asciidoctor
       shell: bash
       run: gem install asciidoctor
-
-    - name: Build hugo
-      shell: bash
-      run: hugo
-      working-directory: ${{ inputs.directory }}
-
-    - name: Store artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ inputs.artifact-name }}
-        path: ${{ inputs.directory}}/dist
-        retention-days: ${{ inputs.retention-day }}
