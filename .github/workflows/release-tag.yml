@@ -42,7 +42,12 @@ jobs:
         version: ${{ inputs.version }}
         target: ${{ inputs.target }}
         pom: ${{ inputs.pom }}
-     
+
+    - name: Update DEPENDENCIES
+      uses: eclipse-set/build/.github/actions/update-dependency-file@main
+      with:
+        pom: ${{ inputs.pom }}        
+
     - name: Push to Github
       run: |
         git config user.name 'eclipse-set-bot'
