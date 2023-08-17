@@ -29,6 +29,7 @@ runs:
         # re-cache on changes in the pom and target files
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml', '**/*.target') }}
         restore-keys: |
+          ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml', '**/*.target') }}
           ${{ runner.os }}-maven-
 
     - name: Copy repository local maven settings
