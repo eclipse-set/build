@@ -27,4 +27,4 @@ jobs:
           context: .
           file: ./docker/rust/Dockerfile
           push: true
-          tags: ghcr.io/eclipse-set/rust-x86_64-pc-windows-gnu:latest
+          tags: ${{ env.REGISTRY }}/eclipse-set/rust-x86_64-pc-windows-gnu:latest
