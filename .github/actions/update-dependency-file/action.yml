@@ -14,9 +14,46 @@ runs:
 
     - name: Process maven dependencies
       shell: bash
-      run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true dependency:list -DappendOutput=true -DoutputFile=${{ github.workspace }}/maven.deps
+      run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true org.eclipse.dash:license-tool-plugin:license-check -Ddash.summary=maven.deps
       env:
         GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Post process maven dependencies
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs')
+          const content = fs.readFileSync('maven.deps', { encoding: 'utf8' }).trim();
+          const lines = content.split('\n')
+          let output = ""
+          for (const line of lines) {
+            // Only output the first component, as otherwise Dash rejects our input
+            let dep = line.split(",")[0]
+
+            // Special case for m2e dependencies.
+            // For bundles automatically wrapped via m2e, we name the wrapped bundles
+            //  maven.<group>.artifact.<artifact>
+            // This can then be split back to reference maven central
+            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\.]+)\.artifact\.([-a-z\.]+)\/([\d\.]+)$/;
+            const match = dep.match(m2eRegex)
+            if(match)
+            {
+              // Special case for fop: 
+              // There is no third component in the Maven version, however m2e generates one
+              const group = match[1]
+              const artifact = match[2]
+              let version = match[3]
+              if(group === 'org.apache.xmlgraphics' && artifact === 'fop')
+              {
+                const verSplit = version.split(".")
+                version = `${verSplit[0]}.${verSplit[1]}`
+              }
+              dep = `maven/mavencentral/${group}/${artifact}/${version}`
+            }
+
+            output += `${dep}\n`
+          }
+          fs.writeFileSync('maven.deps', output, { encoding: 'utf8' })          
 
     - name: License check
       shell: bash {0} # do not fail-fast
