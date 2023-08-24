@@ -1,0 +1,48 @@
+pipeline {
+  agent {
+    kubernetes {
+      yamlFile 'ci/release/kubernetes.yaml'
+    }
+  }
+
+  options {
+    timeout(time: 120, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '3'))
+  }
+
+  parameters {
+    string description: 'Release Version. Format: <major>.<minor>.<patch>', name: 'ReleaseVersion', trim: true
+  }
+
+
+  stages {
+    stage('Create Release Branch') {
+      when {
+        expression { Versioning.isNewMajorBuild(params.ReleaseVersion) }
+      }
+      steps {
+        container('github') {
+          withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
+            ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/model', citag: "[${params.ReleaseVersion}]", parameters: [version: Versioning.getMajorMinor(params.ReleaseVersion)]
+            ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/toolboxmodel', citag: "[${params.ReleaseVersion}]", parameters: [version: Versioning.getMajorMinor(params.ReleaseVersion)]
+            ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/browser', citag: "[${params.ReleaseVersion}]", parameters: [version: Versioning.getMajorMinor(params.ReleaseVersion)]
+            ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/set', citag: "[${params.ReleaseVersion}]", parameters: [version: Versioning.getMajorMinor(params.ReleaseVersion)]
+          }
+        }
+      }
+    }
+        
+    stage ('Create Release Tag') {
+      steps {
+        container('github') {
+          withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
+            ghCreateTagAndBuild repo: 'eclipse-set/model', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+            ghCreateTagAndBuild repo: 'eclipse-set/toolboxmodel', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+            ghCreateTagAndBuild repo: 'eclipse-set/browser', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+            ghCreateTagAndBuild repo: 'eclipse-set/set', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+          }
+        }
+      }
+    }
+  }
+}

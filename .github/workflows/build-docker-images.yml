@@ -31,3 +31,11 @@ jobs:
           file: ./docker/rust/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/eclipse-set/rust-x86_64-pc-windows-gnu:latest
+
+      - name: Build and push Github CLI image
+        uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825 # v4.1.1
+        with:
+          context: .
+          file: ./docker/github-cli/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/eclipse-set/github-cli:latest

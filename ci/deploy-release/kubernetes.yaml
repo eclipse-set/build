@@ -6,13 +6,8 @@ spec:
     volumeMounts:
     - name: volume-known-hosts
       mountPath: /home/jenkins/.ssh 
-  - name: python
-    image: openkbs/jdk11-mvn-py3:v1.2.1
-    volumeMounts:
-    - name: local
-      mountPath: /home/developer/.local
-    - name: cache
-      mountPath: /home/developer/.cache
+  - name: github
+    image: ghcr.io/eclipse-set/github-cli:latest
     command:
     - cat
     tty: true
@@ -22,7 +17,13 @@ spec:
         cpu: "1"
       requests:
         memory: "2Gi"
-        cpu: "1"  
+        cpu: "1"
+    env:
+    - name: npm_config_cache
+      value: "/home/jenkins/.npm"
+    volumeMounts:
+    - name: npm-repo
+      mountPath: /home/jenkins/.npm        
   volumes:
   - name: volume-known-hosts
     configMap:
@@ -33,3 +34,5 @@ spec:
   - name: cache
     emptyDir:
       sizeLimit: 500Mi    
+  - name: npm-repo
+    emptyDir: {}  

@@ -6,8 +6,8 @@ spec:
     volumeMounts:
     - name: volume-known-hosts
       mountPath: /home/jenkins/.ssh 
-  - name: nodejs
-    image: node:18
+  - name: github
+    image: ghcr.io/eclipse-set/github-cli:latest
     command:
     - cat
     tty: true
