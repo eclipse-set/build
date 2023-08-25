@@ -34,7 +34,7 @@ runs:
             // For bundles automatically wrapped via m2e, we name the wrapped bundles
             //  maven.<group>.artifact.<artifact>
             // This can then be split back to reference maven central
-            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\.]+)\.artifact\.([-a-z\.]+)\/([\d\.]+)$/;
+            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\d\.]+)\.artifact\.([-a-z\d\.]+)\/([\d\.]+)$/;
             const match = dep.match(m2eRegex)
             if(match)
             {
