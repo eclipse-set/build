@@ -55,7 +55,7 @@ runs:
             // Snapshots contain a timestamp, for example
             //  p2/orbit/p2.eclipse.plugin/org.eclipse.set.toolboxmodel.edit/2.1.0.202308250721
             // As those update all the time, we do not want that information in the DEPENDENCIES file
-            const setRegex = /p2\/orbit\/p2\.eclipse\.plugin\/org\.eclipse\.set\.([-a-z\.]+)\/([\d\.]+)\.\d+$/;
+            const setRegex = /p2\/orbit\/p2\.eclipse\.plugin\/org\.eclipse\.set\.([-a-z\d\.]+)\/([\d\.]+)\.\d+$/;
             const setMatch = dep.match(m2eRegex)
             if(setMatch)
             {
