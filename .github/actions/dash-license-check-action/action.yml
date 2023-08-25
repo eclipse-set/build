@@ -56,7 +56,7 @@ runs:
             // For bundles automatically wrapped via m2e, we name the wrapped bundles
             //  maven.<group>.artifact.<artifact>
             // This can then be split back to reference maven central
-            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\.]+)\.artifact\.([-a-z\.]+)\/([\d\.]+)$/;
+            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\d\.]+)\.artifact\.([-a-z\d\.]+)\/([\d\.]+)$/;
             const match = dep.match(m2eRegex)
             if(match)
             {
@@ -73,6 +73,19 @@ runs:
               dep = `maven/mavencentral/${group}/${artifact}/${version}`
             }
 
+            // Special case for SET snapshots
+            // Snapshots contain a timestamp, for example
+            //  p2/orbit/p2.eclipse.plugin/org.eclipse.set.toolboxmodel.edit/2.1.0.202308250721
+            // As those update all the time, we do not want that information in the DEPENDENCIES file
+            const setRegex = /p2\/orbit\/p2\.eclipse\.plugin\/org\.eclipse\.set\.([-a-z\d\.]+)\/([\d\.]+)\.\d+$/;
+            const setMatch = dep.match(m2eRegex)
+            if(setMatch)
+            {
+              const artifact = match[1]
+              const version = match[2]
+              dep = `p2/orbit/p2.eclipse.plugin/org.eclipse.set.${artifact}/${version}-SNAPSHOT`
+            }
+            
             output += `${dep}\n`
           }
           fs.writeFileSync('maven.deps', output, { encoding: 'utf8' })
