@@ -34,7 +34,7 @@ jobs:
     - name: Validate version format
       run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+$'
       
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Bump versions
       uses: eclipse-set/build/.github/actions/set-version@main
