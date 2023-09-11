@@ -1,11 +1,29 @@
-name: 'Update DEPENDENCIES file'
-description: 'Updates the DEPENDENCIES file'
-inputs:
-  pom:
-    description: 'pom.xml path'
-    required: false
-    default: 'pom.xml'
+# *************************************************************************
+# * Copyright (c) 2022, 2023 Hannes Wellmann and others.
+# *
+# * This program and the accompanying materials are made available under
+# * the terms of the Eclipse Public License 2.0 which accompanies this
+# * distribution, and is available at https://www.eclipse.org/legal/epl-2.0
+# *
+# * SPDX-License-Identifier: EPL-2.0
+# *      Hannes Wellmann - initial API and implementation
+# *************************************************************************
+# Adapted from https://github.com/eclipse/dash-licenses/blob/master/.github/actions/maven-license-check-action/action.yml
+# for usage in Eclipse SET
 
+name: "Check license vetting status"
+description: "Checks if the licenses of all dependencies are vetted and requests a review in case required and wanted"
+inputs:
+  request-review:
+    description: ""
+    required: false
+  project-id:
+    description: ""
+    required: false
+outputs:
+  licenses-vetted:
+    description: "True if all licenses are vetted, else false"
+    value: ${{ steps.license-check-with-review-request.outputs.build-succeeded }}
 runs:
   using: "composite"
   steps:
@@ -14,63 +32,28 @@ runs:
 
     - name: Process maven dependencies
       shell: bash
-      run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true org.eclipse.dash:license-tool-plugin:license-check -Ddash.summary=maven.deps
+      run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true org.eclipse.set:license-maven-plugin:license-check -Ddash.summary=maven.deps
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Post process maven dependencies
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs')
-          const content = fs.readFileSync('maven.deps', { encoding: 'utf8' }).trim();
-          const lines = content.split('\n')
-          let output = ""
-          for (const line of lines) {
-            // Only output the first component, as otherwise Dash rejects our input
-            let dep = line.split(",")[0]
-
-            // Special case for m2e dependencies.
-            // For bundles automatically wrapped via m2e, we name the wrapped bundles
-            //  maven.<group>.artifact.<artifact>
-            // This can then be split back to reference maven central
-            const m2eRegex = /p2\/orbit\/p2\.eclipse\.plugin\/maven\.([-a-z\d\.]+)\.artifact\.([-a-z\d\.]+)\/([\d\.]+)$/;
-            const match = dep.match(m2eRegex)
-            if(match)
-            {
-              // Special case for fop: 
-              // There is no third component in the Maven version, however m2e generates one
-              const group = match[1]
-              const artifact = match[2]
-              let version = match[3]
-              if(group === 'org.apache.xmlgraphics' && artifact === 'fop')
-              {
-                const verSplit = version.split(".")
-                version = `${verSplit[0]}.${verSplit[1]}`
-              }
-              dep = `maven/mavencentral/${group}/${artifact}/${version}`
-            }
-
-            // Special case for SET snapshots
-            // Snapshots contain a timestamp, for example
-            //  p2/orbit/p2.eclipse.plugin/org.eclipse.set.toolboxmodel.edit/2.1.0.202308250721
-            // As those update all the time, we do not want that information in the DEPENDENCIES file
-            const setRegex = /p2\/orbit\/p2\.eclipse\.plugin\/org\.eclipse\.set\.([-a-z\d\.]+)\/([\d\.]+)\.\d+$/;
-            const setMatch = dep.match(m2eRegex)
-            if(setMatch)
-            {
-              const artifact = match[1]
-              const version = match[2]
-              dep = `p2/orbit/p2.eclipse.plugin/org.eclipse.set.${artifact}/${version}-SNAPSHOT`
-            }
-            
-            output += `${dep}\n`
-          }
-          fs.writeFileSync('maven.deps', output, { encoding: 'utf8' })
-
-    - name: License check
+    - id: license-check-with-review-request
       shell: bash {0} # do not fail-fast
       run: |
-        wget -nv -O ../dash.jar "https://repo.eclipse.org/service/local/artifact/maven/redirect?r=dash-licenses&g=org.eclipse.dash&a=org.eclipse.dash.licenses&v=LATEST"
-        java -jar ../dash.jar ${dashArgs} -summary DEPENDENCIES $(find . '(' -name "*.deps" -o -name "package-lock.json" ')' -type f -exec sh -c 'echo "$0"' {} \;)
-        rm -rf ${{ github.workspace }}/maven.deps
+        mvnArgs="-U -B -ntp org.eclipse.set:license-maven-plugin:license-check -Ddash.fail=true -Dtycho.target.eager=true --settings $GITHUB_ACTION_PATH/licenseCheckMavenSettings.xml -Ddash.summary=DEPENDENCIES"
+        if [[ ${{ inputs.project-id }} != "" ]]; then
+          mvnArgs+=" -Ddash.projectId=${{ inputs.project-id }}"
+        fi
+        if [ ${{ inputs.request-review }} ]; then
+          mvn ${mvnArgs} -Ddash.iplab.token=$GITLAB_API_TOKEN
+          if [[ $? == 0 ]]; then # All licenses are vetted
+            echo "build-succeeded=1" >> $GITHUB_OUTPUT
+          else
+            echo "build-succeeded=0" >> $GITHUB_OUTPUT
+          fi
+        else
+          mvn ${mvnArgs}
+          if [[ $? != 0 ]]; then
+            echo "Committers can request a review by commenting '/request-license-review'"
+            exit 1
+          fi
+        fi

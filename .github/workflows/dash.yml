@@ -10,7 +10,7 @@
 # *************************************************************************
 # Adapted from https://github.com/eclipse/dash-licenses/blob/master/.github/workflows/mavenLicenseCheck.yml
 # for usage in Eclipse SET
-# 
+#
 # This workflow will check for Maven projects if the licenses of all (transitive) dependencies are vetted.
 
 name: License vetting status check
@@ -22,150 +22,151 @@ on:
         description: 'The "projectId" used when license vetting is requested'
         type: string
         required: false
-        default: 'technology.set'
+        default: "technology.set"
       pom:
-        description: 'The path to the pom.xml'
+        description: "The path to the pom.xml"
         type: string
         required: false
-        default: 'pom.xml'
+        default: "pom.xml"
     secrets:
       gitlabAPIToken:
-        description: 'The authentication token (scope: api) from gitlab.eclipse.org of the calling repository. Only required if license vetting is requested'
+        description: "The authentication token (scope: api) from gitlab.eclipse.org of the calling repository. Only required if license vetting is requested"
         required: false
 
 jobs:
   check-licenses:
     if: github.event_name != 'issue_comment' || (github.event.issue.pull_request && (contains(github.event.comment.body, '/request-license-review') || contains(github.event.comment.body, '/license-check')))
-    
+
     # Run on all non-comment events specified by the calling workflow and for comments on PRs that have a corresponding body.
     runs-on: ubuntu-22.04
     steps:
+      - name: Check dependabot PR
+        run: echo "isDependabotPR=1" >> $GITHUB_ENV
+        if: >
+          github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened')
+          && github.actor == 'dependabot[bot]' && github.actor_id == '49699333'
+        # For 'issue_comment'-events this job only runs if a comment was added to a PR with body specified above
 
-    - name: Check dependabot PR 
-      run: echo "isDependabotPR=1" >> $GITHUB_ENV
-      if: >
-        github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened')
-        && github.actor == 'dependabot[bot]' && github.actor_id == '49699333'
-      # For 'issue_comment'-events this job only runs if a comment was added to a PR with body specified above
+      - name: Set review request
+        run: echo "request-review=1" >> $GITHUB_ENV
+        if: (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/request-license-review')) || env.isDependabotPR
 
-    - name: Set review request
-      run: echo "request-review=1" >> $GITHUB_ENV
-      if: (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/request-license-review')) || env.isDependabotPR
-    
-    - name: Set license check
-      run: echo "license-check=1" >> $GITHUB_ENV
-      if: (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/license-check')) || env.isDependabotPR
+      - name: Set license check
+        run: echo "license-check=1" >> $GITHUB_ENV
+        if: (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/license-check')) || env.isDependabotPR
 
-    - name: Process license-vetting request
-      if: (env.request-review || env.license-check) && (!env.isDependabotPR)
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const payload = await github.rest.repos.getCollaboratorPermissionLevel({
-            ...context.repo, username: context.actor
-          });
-          const userPermission = payload?.data?.permission;
-          let reaction = 'rocket'
-          if (!(userPermission == 'write' || userPermission == 'admin')) { // not a committer
-            // Not a committer -> abort workflow
-            core.setFailed("Only committers are permitted to request license vetting and " + context.actor + " isn't one.")
-            reaction = '-1'
-          }
-          // react on comment to give early feedback that the request was understood
-          await github.rest.reactions.createForIssueComment({
-            ...context.repo, comment_id: context.payload?.comment?.id, content: reaction
-          });
+      - name: Process license-vetting request
+        if: (env.request-review || env.license-check) && (!env.isDependabotPR)
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const payload = await github.rest.repos.getCollaboratorPermissionLevel({
+              ...context.repo, username: context.actor
+            });
+            const userPermission = payload?.data?.permission;
+            let reaction = 'rocket'
+            if (!(userPermission == 'write' || userPermission == 'admin')) { // not a committer
+              // Not a committer -> abort workflow
+              core.setFailed("Only committers are permitted to request license vetting and " + context.actor + " isn't one.")
+              reaction = '-1'
+            }
+            // react on comment to give early feedback that the request was understood
+            await github.rest.reactions.createForIssueComment({
+              ...context.repo, comment_id: context.payload?.comment?.id, content: reaction
+            });
 
-    # By default the git-ref checked out for events triggered by comments to PRs is 'refs/heads/master'
-    # and for events triggered by PR creation/updates the ref is 'refs/pull/<PR-number>/merge'.
-    # So by default only the master-branch would be considered when requesting license-reviews, but we want the PR's state.
-    # Unless the PR is closed, then we want the master-branch, which allows subsequent license review requests.
-    - uses: actions/checkout@v4
-      # use default ref 'refs/pull/<PR-number>/merge' for PR-events and 'refs/heads/master' for comments if the PR is closed
-      if: github.event.issue.pull_request == '' || github.event.issue.state != 'open'
-      with:
-        submodules: ${{ inputs.submodules }}
-    - uses: actions/checkout@v4
-      with:
-        ref: 'refs/pull/${{ github.event.issue.number }}/merge'
-        submodules: ${{ inputs.submodules }}
-      if: github.event.issue.pull_request != '' && github.event.issue.state == 'open'
-    
-    - name: Check license vetting status (and ask for review if requested)
-      id: check-license-vetting
-      uses: eclipse-set/build/.github/actions/dash-license-check-action@main
-      with:
-        request-review: ${{ env.request-review }}
-        project-id: ${{ inputs.projectId }}
-        pom: ${{ inputs.pom }}
-      env:
-        GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
-    
-    # Hide outdated License comments
-    - uses: int128/hide-comment-action@31ed3fba540f945e950fc8f62f28c7510f737da8 # v1.24.0
-      with:
-        ends-with: |
-          <!-- tag-license-comment -->
+      # By default the git-ref checked out for events triggered by comments to PRs is 'refs/heads/master'
+      # and for events triggered by PR creation/updates the ref is 'refs/pull/<PR-number>/merge'.
+      # So by default only the master-branch would be considered when requesting license-reviews, but we want the PR's state.
+      # Unless the PR is closed, then we want the master-branch, which allows subsequent license review requests.
+      - uses: actions/checkout@v4
+        # use default ref 'refs/pull/<PR-number>/merge' for PR-events and 'refs/heads/master' for comments if the PR is closed
+        if: github.event.issue.pull_request == '' || github.event.issue.state != 'open'
+        with:
+          submodules: ${{ inputs.submodules }}
+      - uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.issue.number }}/merge"
+          submodules: ${{ inputs.submodules }}
+        if: github.event.issue.pull_request != '' && github.event.issue.state == 'open'
 
-    - name: Process license check results
-      if: always() 
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs')
-          const reviewRequested = ${{ env.request-review || false }}
-          const updateRequested = reviewRequested || ${{ env.license-check || false }}
-          const licensesVetted = ${{ steps.check-license-vetting.outputs.licenses-vetted }}
+      - name: Check license vetting status (and ask for review if requested)
+        id: check-license-vetting
+        uses: eclipse-set/build/.github/actions/update-dependency-file@main
+        with:
+          request-review: ${{ env.request-review }}
+          project-id: ${{ inputs.projectId }}
+          pom: ${{ inputs.pom }}
+        env:
+          GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
 
-          let commentBody = "### License summary\n"
-          if (licensesVetted)
-          {
-            if(updateRequested)
+      # Hide outdated License comments
+      - uses: int128/hide-comment-action@31ed3fba540f945e950fc8f62f28c7510f737da8 # v1.24.0
+        with:
+          ends-with: |
+            <!-- tag-license-comment -->
+
+      - name: Process license check results
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+            const reviewRequested = ${{ env.request-review || false }}
+            const updateRequested = reviewRequested || ${{ env.license-check || false }}
+            const licensesVetted = ${{ steps.check-license-vetting.outputs.licenses-vetted }}
+
+            let commentBody = "### License summary\n"
+            if (licensesVetted)
             {
-              commentBody += ':heavy_check_mark: All licenses already successfully vetted.\n'
+              if(updateRequested)
+              {
+                commentBody += ':heavy_check_mark: All licenses already successfully vetted.\n'
+              }
+              else 
+              {
+                // Do not comment if all licenses are vetted and no update was requested 
+                core.info('All licenses are already vetted.')
+                return;
+              }
             }
             else 
             {
-              // Do not comment if all licenses are vetted and no update was requested 
-              core.info('All licenses are already vetted.')
-              return;
-            }
-          }
-          else 
-          {
-            const reviewSummaryFile = 'DEPENDENCIES'
-            core.info("Read review summary at " + reviewSummaryFile)
-            let content = "";
-            if (fs.existsSync(reviewSummaryFile)) {
-              content = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();
-            }
-
-            if (content) { // not empty
-              commentBody += ":x: Not yet vetted dependencies:\n"
-              commentBody += "| Dependency | License | Status | Ticket |\n"
-              commentBody += "|------------|---------|--------|--------|\n"
-              const lines = content.split('\n')
-              for (const line of lines) {
-                if(line.includes('restricted')) {
-                  commentBody += `| ${line.split(", ").join(" | ")} |\n`
-                }
+              const reviewSummaryFile = 'DEPENDENCIES'
+              core.info("Read review summary at " + reviewSummaryFile)
+              let content = "";
+              if (fs.existsSync(reviewSummaryFile)) {
+                content = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();
               }
-              commentBody += '\n\n- Committers can request a license review via by commenting `/request-license-review`.\n- After all reviews have concluded, Committers can re-run the license-vetting check by commenting `/license-check`\n'
 
-            } else {
-              core.setFailed("License vetting build failed, but no reviews are created")
-              commentBody += ':warning: Failed to request review of not vetted licenses.\n'
+              if (content) { // not empty
+                commentBody += ":x: Not yet vetted dependencies:\n"
+                commentBody += "| Dependency | License | Status | Ticket |\n"
+                commentBody += "|------------|---------|--------|--------|\n"
+                const lines = content.split('\n')
+                for (const line of lines) {
+                  if(line.includes('restricted')) {
+                    commentBody += `| ${line.split(", ").join(" | ")} |\n`
+                  }
+                }
+                commentBody += '\n\n- Committers can request a license review via by commenting `/request-license-review`.\n- After all reviews have concluded, Committers can re-run the license-vetting check by commenting `/license-check`\n'
+
+              } else {
+                core.setFailed("License vetting build failed, but no reviews are created")
+                commentBody += ':warning: Failed to request review of not vetted licenses.\n'
+              }
             }
-          }
 
-          commentBody += `\nWorkflow run (with attached summary files):\n${context.serverUrl}/${process.env.GITHUB_REPOSITORY}/actions/runs/${context.runId}`
-          commentBody += '\n<!-- tag-license-comment -->'
-          github.rest.issues.createComment({
-            issue_number: context.issue.number, ...context.repo, body: commentBody
-          })
-    
-    - uses: actions/upload-artifact@v3
-      if: always() 
-      with:
-        name: '${{ inputs.projectId }}-license-vetting-summary'
-        path: DEPENDENCIES
+            commentBody += `\nWorkflow run (with attached summary files):\n${context.serverUrl}/${process.env.GITHUB_REPOSITORY}/actions/runs/${context.runId}`
+            commentBody += '\n<!-- tag-license-comment -->'
+            github.rest.issues.createComment({
+              issue_number: context.issue.number, ...context.repo, body: commentBody
+            })
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: "${{ inputs.projectId }}-license-vetting-summary"
+          path: |
+            DEPENDENCIES
+            target/dash/review-summary
