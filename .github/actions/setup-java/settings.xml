@@ -30,9 +30,18 @@
   </servers>
   <repositories>
     <repository>
-      <id>set-github-build</id>
-      <name>eclipse-set/build</name>
-      <url>https://maven.pkg.github.com/eclipse-set/build</url>
+      <id>dash-licenses-snapshots</id>
+  		<url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
+  		<snapshots>
+  			<enabled>true</enabled>
+  		</snapshots>
     </repository>
   </repositories>
+  <pluginRepositories>
+  	<pluginRepository>
+  		<id>set-github-build</id>
+      <name>eclipse-set-build</name>
+      <url>https://maven.pkg.github.com/eclipse-set/build</url>
+  	</pluginRepository>
+  </pluginRepositories>
 </settings>
