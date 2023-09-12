@@ -38,8 +38,7 @@ public class M2EDependencyMapper {
 		// Extract the original maven gid/aid pair
 		String noPrefixName = name.substring(PREFIX.length());
 		String[] parts = noPrefixName.split(Pattern.quote(INFIX));
-		System.out.println(noPrefixName);
-		System.out.println(parts.length);
+		
 		final String groupId = parts[0];
 		final String artifactId = parts[1];		
 		String version = contentId.getVersion();

@@ -1,6 +1,5 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
   <servers>
     <server>
       <id>set-github</id>
@@ -31,17 +30,17 @@
   <repositories>
     <repository>
       <id>dash-licenses-snapshots</id>
-  		<url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
-  		<snapshots>
-  			<enabled>true</enabled>
-  		</snapshots>
+      <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </repositories>
   <pluginRepositories>
-  	<pluginRepository>
-  		<id>set-github-build</id>
+    <pluginRepository>
+      <id>set-github-build</id>
       <name>eclipse-set-build</name>
       <url>https://maven.pkg.github.com/eclipse-set/build</url>
-  	</pluginRepository>
+    </pluginRepository>
   </pluginRepositories>
 </settings>
