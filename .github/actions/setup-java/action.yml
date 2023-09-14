@@ -28,4 +28,4 @@ runs:
 
     - name: Copy repository local maven settings
       shell: bash
-      run: cp $GITHUB_ACTION_PATH ~/.m2/settings.xml
+      run: cp $GITHUB_ACTION_PATH/settings.xml ~/.m2/settings.xml
