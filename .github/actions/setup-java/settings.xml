@@ -27,15 +27,23 @@
       <password>${env.GITHUB_TOKEN}</password>
     </server>
   </servers>
-  <repositories>
-    <repository>
-      <id>dash-licenses-snapshots</id>
-      <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>dash-licenses-snapshots</id>
+          <url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>      
   <pluginRepositories>
     <pluginRepository>
       <id>set-github-build</id>
