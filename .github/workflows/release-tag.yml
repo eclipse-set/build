@@ -44,9 +44,7 @@ jobs:
         pom: ${{ inputs.pom }}
 
     - name: Update DEPENDENCIES
-      uses: eclipse-set/build/.github/actions/update-dependency-file@main
-      with:
-        pom: ${{ inputs.pom }}        
+      uses: eclipse-set/build/.github/actions/check-dependencies@main
 
     - name: Push to Github
       run: |

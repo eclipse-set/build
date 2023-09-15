@@ -92,11 +92,10 @@ jobs:
 
       - name: Check license vetting status (and ask for review if requested)
         id: check-license-vetting
-        uses: eclipse-set/build/.github/actions/update-dependency-file@main
+        uses: eclipse-set/build/.github/actions/check-dependencies@main
         with:
           request-review: ${{ env.request-review }}
           project-id: ${{ inputs.projectId }}
-          pom: ${{ inputs.pom }}
         env:
           GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
 
