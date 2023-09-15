@@ -167,10 +167,10 @@ jobs:
                   for (const line of lines) {
                     commentBody += `- ${line}\n`
                   }
+                } else {
+                  core.setFailed("License vetting build failed, but no reviews are created")
+                  commentBody += ':warning: Failed to request review of not vetted licenses.\n'
                 }
-              } else {
-                core.setFailed("License vetting build failed, but no reviews are created")
-                commentBody += ':warning: Failed to request review of not vetted licenses.\n'
               }
 
               commentBody += '\n\n- Committers can request a license review via by commenting `/request-license-review`.\n- After all reviews have concluded, Committers can re-run the license-vetting check by commenting `/license-check`\n'
