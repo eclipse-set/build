@@ -42,13 +42,13 @@
           </snapshots>
         </repository>
       </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>set-github-build</id>
+          <name>eclipse-set-build</name>
+          <url>https://maven.pkg.github.com/eclipse-set/build</url>
+        </pluginRepository>
+      </pluginRepositories>
     </profile>
   </profiles>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>set-github-build</id>
-      <name>eclipse-set-build</name>
-      <url>https://maven.pkg.github.com/eclipse-set/build</url>
-    </pluginRepository>
-  </pluginRepositories>
 </settings>
