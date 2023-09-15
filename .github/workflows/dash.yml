@@ -132,11 +132,12 @@ jobs:
             }
             else 
             {
-              const reviewSummaryFile = 'DEPENDENCIES'
-              core.info("Read review summary at " + reviewSummaryFile)
+              // Print dependency info 
+              const dependencySummaryFile = 'DEPENDENCIES'
+              core.info("Read dependency summary at " + dependencySummaryFile)
               let content = "";
-              if (fs.existsSync(reviewSummaryFile)) {
-                content = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();
+              if (fs.existsSync(dependencySummaryFile)) {
+                content = fs.readFileSync(dependencySummaryFile, { encoding: 'utf8' }).trim();
               }
 
               if (content) { // not empty
@@ -149,12 +150,31 @@ jobs:
                     commentBody += `| ${line.split(", ").join(" | ")} |\n`
                   }
                 }
-                commentBody += '\n\n- Committers can request a license review via by commenting `/request-license-review`.\n- After all reviews have concluded, Committers can re-run the license-vetting check by commenting `/license-check`\n'
+              } else {
+                commentBody += ':warning: Failed to process DEPENDENCIES.\n'
+              }
 
+              if(reviewRequested)
+              {
+                const reviewSummaryFile = "target/dash/review-summary"
+                let reviews = "";
+                if (fs.existsSync(reviewSummaryFile)) {
+                  reviews = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();
+                }
+                if (reviews) { // not empty
+                  commentBody += "\n### :rocket: Requested reviews:\n"
+                  const lines = reviews.split('\n')
+                  for (const line of lines) {
+                    commentBody += `- line\n`
+                  }
+                }
               } else {
                 core.setFailed("License vetting build failed, but no reviews are created")
                 commentBody += ':warning: Failed to request review of not vetted licenses.\n'
               }
+
+              commentBody += '\n\n- Committers can request a license review via by commenting `/request-license-review`.\n- After all reviews have concluded, Committers can re-run the license-vetting check by commenting `/license-check`\n'
+
             }
 
             commentBody += `\nWorkflow run (with attached summary files):\n${context.serverUrl}/${process.env.GITHUB_REPOSITORY}/actions/runs/${context.runId}`
