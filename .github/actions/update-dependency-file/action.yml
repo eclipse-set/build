@@ -45,15 +45,11 @@ runs:
         fi
         if [ ${{ inputs.request-review }} ]; then
           mvn ${mvnArgs} -Ddash.iplab.token=$GITLAB_API_TOKEN
-          if [[ $? == 0 ]]; then # All licenses are vetted
-            echo "build-succeeded=1" >> $GITHUB_OUTPUT
-          else
-            echo "build-succeeded=0" >> $GITHUB_OUTPUT
-          fi
         else
           mvn ${mvnArgs}
-          if [[ $? != 0 ]]; then
-            echo "Committers can request a review by commenting '/request-license-review'"
-            exit 1
-          fi
+        fi
+        if [[ $? == 0 ]]; then # All licenses are vetted
+          echo "build-succeeded=1" >> $GITHUB_OUTPUT
+        else
+          echo "build-succeeded=0" >> $GITHUB_OUTPUT
         fi
