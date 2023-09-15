@@ -30,16 +30,10 @@ runs:
     - name: Setup Java
       uses: eclipse-set/build/.github/actions/setup-java@main
 
-    - name: Process maven dependencies
-      shell: bash
-      run: mvn -f ${{ inputs.pom }} -U -B -ntp -Dtycho.target.eager=true org.eclipse.set:license-maven-plugin:license-check -Ddash.summary=maven.deps
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-
     - id: license-check-with-review-request
       shell: bash {0} # do not fail-fast
       run: |
-        mvnArgs="-U -B -ntp org.eclipse.set:license-maven-plugin:license-check -Dtycho.target.eager=true -Ddash.summary=DEPENDENCIES"
+        mvnArgs="-U -B -ntp org.eclipse.set:license-maven-plugin:license-check -Ddash.fail=true -Dtycho.target.eager=true -Ddash.summary=DEPENDENCIES"
         if [[ ${{ inputs.project-id }} != "" ]]; then
           mvnArgs+=" -Ddash.projectId=${{ inputs.project-id }}"
         fi
@@ -53,3 +47,5 @@ runs:
         else
           echo "build-succeeded=0" >> $GITHUB_OUTPUT
         fi
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
