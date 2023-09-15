@@ -36,7 +36,7 @@ runs:
       shell: bash {0} # do not fail-fast
       run: |
         mvnArgs="-U -B -ntp org.eclipse.set:license-maven-plugin:license-check -Ddash.fail=true -Dtycho.target.eager=true -Ddash.summary=DEPENDENCIES"
-        if [[ ${{ inputs.project-id }} ]]; then
+        if [ ${{ inputs.project-id }} ]; then
           mvnArgs+=" -Ddash.projectId=${{ inputs.project-id }}"
         fi
         if [ ${{ inputs.request-review }} ]; then
