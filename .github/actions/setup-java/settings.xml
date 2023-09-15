@@ -43,7 +43,7 @@
         </repository>
       </repositories>
     </profile>
-  </profiles>      
+  </profiles>
   <pluginRepositories>
     <pluginRepository>
       <id>set-github-build</id>
