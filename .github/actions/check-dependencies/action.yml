@@ -17,6 +17,7 @@ inputs:
   request-review:
     description: ""
     required: false
+    default: "0"
   project-id:
     description: ""
     required: false
