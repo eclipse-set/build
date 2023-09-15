@@ -165,7 +165,7 @@ jobs:
                   commentBody += "\n### :rocket: Requested reviews:\n"
                   const lines = reviews.split('\n')
                   for (const line of lines) {
-                    commentBody += `- line\n`
+                    commentBody += `- ${line}\n`
                   }
                 }
               } else {
