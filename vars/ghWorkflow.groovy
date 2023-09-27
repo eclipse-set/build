@@ -3,7 +3,7 @@
  *
  * @param repo Github Repository identifier. For example eclipse-set/model
  * @param workflow Workflow yaml to run
- * @parameters List of parameters for the workflow 
+ * @param parameters List of parameters for the workflow 
  * @param citag identifier to identify the workflow run
  *
  * @author Stuecker
