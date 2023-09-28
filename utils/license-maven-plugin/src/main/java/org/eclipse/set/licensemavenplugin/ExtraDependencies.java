@@ -51,7 +51,7 @@ public class ExtraDependencies {
 	public static Collection<? extends IContentId> getExtraDependencies() {
 		try {
 			return Files.find(Paths.get("."), 100, (path, attrs) -> attrs.isRegularFile())
-			.filter(p -> p.endsWith(".deps") || p.getFileName().toString().equals("package-lock.json"))
+			.filter(p -> p.toString().endsWith(".deps") || p.getFileName().toString().equals("package-lock.json"))
 			.map(ExtraDependencies::getDependencies)
 			.flatMap(Collection::stream)
 			.toList();
