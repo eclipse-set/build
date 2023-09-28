@@ -1,7 +1,6 @@
 /**
  * Creates a tag and waits for the gh build to complete
  *
- * Workaround for https://github.com/orgs/community/discussions/37103
  * @param repo Github Repository identifier. For example eclipse-set/model
  * @param ref branch to tag from. Must not be main
  * @param version version to tag for
