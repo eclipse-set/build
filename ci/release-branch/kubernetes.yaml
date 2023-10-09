@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    volumeMounts:
+    - name: volume-known-hosts
+      mountPath: /home/jenkins/.ssh 
+  - name: github
+    image: ghcr.io/eclipse-set/github-cli:latest
+    command:
+    - cat
+    tty: true
+    resources:
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+    env:
+    - name: npm_config_cache
+      value: "/home/jenkins/.npm"
+    volumeMounts:
+    - name: npm-repo
+      mountPath: /home/jenkins/.npm        
+  volumes:
+  - name: volume-known-hosts
+    configMap:
+      name: known-hosts    
+  - name: local
+    emptyDir:
+      sizeLimit: 500Mi 
+  - name: cache
+    emptyDir:
+      sizeLimit: 500Mi    
+  - name: npm-repo
+    emptyDir: {}  

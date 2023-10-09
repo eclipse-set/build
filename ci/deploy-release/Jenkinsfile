@@ -11,7 +11,7 @@ pipeline {
     }
 
     parameters {
-        string description: 'Release Version. Format: <major>.<minor>.<patch>', name: 'ReleaseVersion', trim: true
+        string description: 'Release Version', name: 'ReleaseVersion', trim: true
     }
 
 
@@ -20,8 +20,7 @@ pipeline {
             steps {
                 container('github') {
                     withCredentials([usernamePassword(credentialsId: 'GitHub-BuildUser', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
-                        downloadFile file: 'set.zip', url: "https://github.com/eclipse-set/set/releases/download/v${params.ReleaseVersion}/SET-${params.ReleaseVersion}-win32.win32.x86_64.zip"
-                        sh 'unzip set.zip'
+                        sh "gh release download -R eclipse-set/set ${params.ReleaseVersion} -p 'SET-*'"
                         sh 'find .'
                     }
                 }
