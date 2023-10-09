@@ -1,3 +1,8 @@
+def getBranchNameForVersion(String version) {
+    def ver = version.split('\\.')
+    return 'release/' + ver[0] + "." + ver[1]
+}
+
 pipeline {
     agent {
         kubernetes {
@@ -20,7 +25,7 @@ pipeline {
             steps {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
-                        ghCreateTagAndBuild repo: 'eclipse-set/model', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+                        ghCreateTagAndBuild repo: 'eclipse-set/model', ref: getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
                     }
                 }
             }
@@ -29,7 +34,7 @@ pipeline {
             steps {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
-                        ghCreateTagAndBuild repo: 'eclipse-set/toolboxmodel', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+                        ghCreateTagAndBuild repo: 'eclipse-set/toolboxmodel', ref: getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
                     }
                 }
             }
@@ -38,7 +43,7 @@ pipeline {
             steps {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
-                        ghCreateTagAndBuild repo: 'eclipse-set/browser', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+                        ghCreateTagAndBuild repo: 'eclipse-set/browser', ref: getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
                     }
                 }
             }
@@ -47,7 +52,7 @@ pipeline {
             steps {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
-                        ghCreateTagAndBuild repo: 'eclipse-set/set', ref: Versioning.getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
+                        ghCreateTagAndBuild repo: 'eclipse-set/set', ref: getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
                     }
                 }
             }
