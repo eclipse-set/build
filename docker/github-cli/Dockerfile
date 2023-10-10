@@ -5,6 +5,8 @@ RUN set -ex; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+	zip \
+ 	unzip \
         git; \
     rm -rf /var/lib/apt/lists/*
 
