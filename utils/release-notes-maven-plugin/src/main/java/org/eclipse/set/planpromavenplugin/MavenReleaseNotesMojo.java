@@ -14,13 +14,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,48 +39,21 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 	private static String versionNumberReg = "^##\\s*\\d+\\.\\d+";
 
 	@SuppressWarnings("boxing")
-	private static String createAcsiidocHeader(final int index,
+	private static String createDocHeader(final int index,
 			final String versionNumber) {
-		return String.format("title: \"%s\"\nanchor: \"%s\"\nWeight: %d",
+		return String.format(
+				"---\ntitle: \"%s\"\nanchor: \"%s\"\nWeight: %d\n---\n",
 				versionNumber, versionNumber, index + 1);
 	}
 
-	private static String createAsiidoc(final int index,
-			final String versionNumber, final String notes) {
-		return String.format("---\n%s\n---\n++++\n%s\n++++",
-				createAcsiidocHeader(index, versionNumber), notes);
-	}
-
-	private static String transformNotes(final String line) {
-		if (line.startsWith("-")) {
-			return String.format("<li>%s</li>", line.replace("-", ""));
-		}
-		return line + "<br/>";
-	}
-
-	@SuppressWarnings("boxing")
-	private static Map<String, String> transformToAsciidoc(
+	private static Map<String, String> transformDoc(
 			final Map<String, List<String>> releaseNotes) {
 		final Map<String, String> result = new LinkedHashMap<>();
 		int index = 0;
 		for (final Entry<String, List<String>> notes : releaseNotes
 				.entrySet()) {
-			final Set<Integer> liElementIndex = new HashSet<>();
-			notes.getValue().forEach(ele -> {
-				if (ele.startsWith("<li>")) {
-					liElementIndex.add(
-							Integer.valueOf(notes.getValue().indexOf(ele)));
-				}
-			});
-			final int liElementLastIndex = liElementIndex.stream()
-					.max(Integer::compare).orElse(notes.getValue().size() - 1)
-					+ 1;
-			final int liElementFirstIndex = liElementIndex.stream()
-					.min(Integer::compare).orElse(0);
-			notes.getValue().add(liElementLastIndex, "</ul>");
-			notes.getValue().add(liElementFirstIndex, "<ul>");
-			result.put(notes.getKey(), createAsiidoc(index, notes.getKey(),
-					String.join("", notes.getValue())));
+			result.put(notes.getKey(), createDocHeader(index, notes.getKey())
+					+ String.join("\n", notes.getValue()));
 			index++;
 		}
 		return result;
@@ -99,8 +70,7 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 		try {
 			getLog().info("Transforming RELASE_NOTE.md");
 			final Map<String, List<String>> releaseNotes = readReleaseNote();
-			final Map<String, String> asciidocs = transformToAsciidoc(
-					releaseNotes);
+			final Map<String, String> asciidocs = transformDoc(releaseNotes);
 			asciidocs.forEach((t, u) -> {
 				try {
 					writeFile(t, u);
@@ -131,7 +101,7 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 					currentVersion = line.replace("#", "").trim();
 					result.put(currentVersion, new LinkedList<>());
 				} else if (!currentVersion.isEmpty()) {
-					result.get(currentVersion).add(transformNotes(line));
+					result.get(currentVersion).add(line);
 				}
 			}
 		}
@@ -140,7 +110,7 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 
 	private void writeFile(final String versionNumber, final String doc)
 			throws IOException {
-		final Path path = Paths.get(outDir, versionNumber, "_index.adoc");
+		final Path path = Paths.get(outDir, versionNumber, "_index.md");
 		if (!Files.exists(path.getParent())) {
 			path.getParent().toFile().mkdirs();
 		}
