@@ -6,7 +6,7 @@ runs:
     - name: Setup JDK
       uses: actions/setup-java@v3
       with:
-        java-version: "21"
+        java-version: "17"
         distribution: temurin
         server-id: set-github
         cache: maven
@@ -14,7 +14,7 @@ runs:
     - name: Setup Maven
       uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
       with:
-        maven-version: 3.9.4
+        maven-version: 3.9.3
 
     - name: Cache local Maven repository
       uses: actions/cache@v3
