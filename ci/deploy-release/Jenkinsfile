@@ -21,14 +21,14 @@ pipeline {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
                         sh "gh release download -R eclipse-set/set v${params.ReleaseVersion} -p 'unsigned-Eclipse-SET-*'"
-                        sh 'unzip -q SET-*.zip -d set'
+                        sh 'unzip -q unsigned-Eclipse-SET-*.zip -d set'
                         dir('set')
                         {
                             sh "find . -name 'org.eclipse.set*.jar' | xargs -I % curl --fail -o % -F file=@% https://cbi.eclipse.org/jarsigner/sign"   
                             sh "zip -r Eclipse-SET-${params.ReleaseVersion}.zip ."
                             archiveArtifacts artifacts: "Eclipse-SET-${params.ReleaseVersion}.zip", followSymlinks: false
                             sh "gh release upload -R eclipse-set/set v${params.ReleaseVersion} Eclipse-SET-${params.ReleaseVersion}.zip"
-                            sh "gh release delete-asset -R eclipse-set/set -y unsigned-Eclipse-SET-${params.ReleaseVersion}.zip"
+                            sh "gh release delete-asset -R eclipse-set/set -y v${params.ReleaseVersion} unsigned-Eclipse-SET-${params.ReleaseVersion}.zip"
                         }
                     }
                 }
