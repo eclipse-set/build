@@ -11,12 +11,12 @@ pipeline {
     }
 
     parameters {
-        string description: 'Release Version', name: 'ReleaseVersion', trim: true
+        string description: 'Release Version. Format: <major>.<minor>.<patch>', name: 'ReleaseVersion', trim: true
     }
 
 
     stages {
-        stage('Sign Release') {
+        stage('Sign Release & Upload') {
             steps {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
@@ -27,6 +27,19 @@ pipeline {
                             sh "find . -name 'org.eclipse.set*.jar' | xargs -I % curl --fail -o % -F file=@% https://cbi.eclipse.org/jarsigner/sign"   
                             sh "zip -r Eclipse-SET-${params.ReleaseVersion}.zip ."
                             archiveArtifacts artifacts: "Eclipse-SET-${params.ReleaseVersion}.zip", followSymlinks: false
+                            sh "gh release upload -R eclipse-set/set v${params.ReleaseVersion} Eclipse-SET-${params.ReleaseVersion}.zip"
+                            sh "gh release delete-asset -R eclipse-set/set -y unsigned-Eclipse-SET-${params.ReleaseVersion}.zip"
+                        }
+                    }
+                }
+                
+                container('jnlp') {
+                    dir('set')
+                    {
+                        sshagent (['projects-storage.eclipse.org-bot-ssh']) {
+                            sh "ssh -o BatchMode=yes genie.set@projects-storage.eclipse.org rm -rf /home/data/httpd/download.eclipse.org/set/releases/${params.ReleaseVersion}"
+                            sh "ssh -o BatchMode=yes genie.set@projects-storage.eclipse.org mkdir -p /home/data/httpd/download.eclipse.org/set/releases/${params.ReleaseVersion}/bin"
+                            sh "scp -o BatchMode=yes -r Eclipse-SET-${params.ReleaseVersion}.zip genie.set@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/set/releases/${params.ReleaseVersion}/bin/"
                         }
                     }
                 }
