@@ -57,7 +57,7 @@ jobs:
 
       - name: Process license-vetting request
         if: (env.request-review || env.license-check) && (!env.isDependabotPR)
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const payload = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -108,7 +108,7 @@ jobs:
 
       - name: Process license check results
         if: always()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs')
