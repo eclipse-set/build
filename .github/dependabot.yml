@@ -5,3 +5,25 @@ updates:
   schedule:
     interval: daily
   rebase-strategy: disabled
+- package-ecosystem: github-actions
+  directory: "/.github/actions/check-dependencies"
+  schedule:
+    interval: daily
+  rebase-strategy: disabled
+- package-ecosystem: github-actions
+  directory: "/.github/actions/set-version"
+  schedule:
+    interval: daily
+  rebase-strategy: disabled
+- package-ecosystem: github-actions
+  directory: "/.github/actions/setup-asciidoctor"
+  schedule:
+    interval: daily
+  rebase-strategy: disabled
+- package-ecosystem: github-actions
+  directory: "/.github/actions/setup-java"
+  schedule:
+    interval: daily
+  rebase-strategy: disabled
+
+
