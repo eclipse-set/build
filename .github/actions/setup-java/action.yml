@@ -6,7 +6,7 @@ runs:
     - name: Setup JDK
       uses: actions/setup-java@v4
       with:
-        java-version: "21"
+        java-version: "27"
         distribution: temurin
         server-id: set-github
         cache: maven
