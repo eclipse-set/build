@@ -30,15 +30,6 @@ pipeline {
                 }
             }
         }
-        stage ('Build Release (toolboxmodel)') {
-            steps {
-                container('github') {
-                    withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
-                        ghCreateTagAndBuild repo: 'eclipse-set/toolboxmodel', ref: getBranchNameForVersion(params.ReleaseVersion), version: params.ReleaseVersion
-                    }
-                }
-            }
-        }
         stage ('Build Release (browser)') {
             steps {
                 container('github') {

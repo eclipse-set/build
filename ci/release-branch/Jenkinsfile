@@ -21,7 +21,6 @@ pipeline {
                 container('github') {
                     withCredentials([string(credentialsId: 'github-bot-token', variable: 'GITHUB_TOKEN')]) {
                         ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/model', citag: "[${params.ReleaseVersion}]", parameters: [version: params.ReleaseVersion]
-                        ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/toolboxmodel', citag: "[${params.ReleaseVersion}]", parameters: [version: params.ReleaseVersion]
                         ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/browser', citag: "[${params.ReleaseVersion}]", parameters: [version: params.ReleaseVersion]
                         ghWorkflow workflow: 'create-release-branch.yml', repo: 'eclipse-set/set', citag: "[${params.ReleaseVersion}]", parameters: [version: params.ReleaseVersion]
                     }
