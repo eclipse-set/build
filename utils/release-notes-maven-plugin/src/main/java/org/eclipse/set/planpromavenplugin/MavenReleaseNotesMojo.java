@@ -36,7 +36,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(name = "transform", requiresProject = false, threadSafe = true, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class MavenReleaseNotesMojo extends AbstractMojo {
 
-	private static String versionNumberReg = "^##\\s*\\d+\\.\\d+";
+	private static String versionNumberReg = "^##\\s*\\d+\\.\\d+(\\.\\d+)?";
 
 	@SuppressWarnings("boxing")
 	private static String createDocHeader(final int index,
