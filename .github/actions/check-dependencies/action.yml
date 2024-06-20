@@ -51,3 +51,7 @@ runs:
         fi
       env:
         GITHUB_TOKEN: ${{ github.token }}
+      
+    - name: Check if dependencies were processed correctly
+      shell: bash
+      run: test -s DEPENDENCIES && exit 1
