@@ -101,6 +101,7 @@ jobs:
 
       # Hide outdated License comments
       - uses: int128/hide-comment-action@850168a162175291c7f4e75f8a223fb4d23402a2 # v1.31.0
+        if: always()
         with:
           ends-with: |
             <!-- tag-license-comment -->
