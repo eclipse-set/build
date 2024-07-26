@@ -1,0 +1,32 @@
+name: 'Handle Table Different'
+description: 'Create and post Pt1 table diff-view on Issue/PR'
+inputs:
+  pr-number:
+    description: 'Pullrequest number'
+    required: false
+  branch:
+    description: 'Branch name'
+    required: true
+  diff-dir:
+    description: 'Path to directory, which contains reference and current csv of table'
+  token:
+    description: 'Github secret token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup python
+      uses: actions/setup-python@v5.1.1
+      with:
+        cache: 'poetry'
+    - run: poetry install
+
+    - name: Setup run script
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        poetry table-diff-view-handle \
+          --diffDir=${{ inputs.diff-dir }} \
+          --branchName=${{ inputs.branch }} \
+          --prNumber=${{ inputs.pr-number }}
