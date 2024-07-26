@@ -20,7 +20,10 @@ runs:
       uses: actions/setup-python@v5.1.1
       with:
         cache: 'poetry'
-    - run: poetry install
+        
+    - name: Setup python script
+      shell: bash
+      run: poetry install
 
     - name: Setup run script
       env:
