@@ -10,7 +10,7 @@ class Configuration:
     # Highlight color for old data
     OLD_DATA_COLOR = "gold"
     # Github repository owner
-    GITHUB_REPO_OWNER = "truongquangsb"
+    GITHUB_REPO_OWNER = "eclipse-set"
     # Github repository name
     GITHUB_REPO_NAME = "set"
     # Github Token
