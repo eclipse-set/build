@@ -66,7 +66,6 @@ def get_changed_test_files(diff_dir: str) -> dict[str, set[str]]:
             result[f"{str(dir)}"] = tables
     return result
 
-
 def create_diff_table(changed_list, reference_list):
     changed_list = list(csv.reader(changed_list, delimiter=";", skipinitialspace=True))
     reference_list = (
