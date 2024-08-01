@@ -23,6 +23,6 @@ def main():
         remove_old_comments(issue_number)
         diff_mds = create_diffs(diff_dir)
         for diff_md in diff_mds:
-            create_issue_comment(diff_md.table, diff_md.md, issue_number)
+            create_issue_comment(diff_md.test_file, diff_md.table, diff_md.md, issue_number)
 
 main()

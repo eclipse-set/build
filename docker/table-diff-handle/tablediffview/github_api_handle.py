@@ -45,9 +45,9 @@ def create_new_issue(issue_title: str) -> str | None:
         raise SystemError(create_issue_response.json()) 
 
 @staticmethod
-def create_issue_comment(table_name: str, diff_md: str, issue_number: str):
+def create_issue_comment(test_file: str, table_name: str, diff_md: str, issue_number: str):
     url = f"{GITHUB_API_ISSUE_URL}/{issue_number}/comments"
-    data = {"body": f"{CONFIG.DIFF_MD_HEADER} {table_name.capitalize()}\n {diff_md}"}
+    data = {"body": f"{CONFIG.DIFF_MD_HEADER} {test_file.upper()} - {table_name.capitalize()}\n {diff_md}"}
     create_comment_reponse = requests.post(
         url, headers=REQUEST_HEADER, json=data
     )

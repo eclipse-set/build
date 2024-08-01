@@ -12,44 +12,47 @@ class htmlcelldata:
         self.text = text
         self.align = align
 class diffmarkdown:
-    def __init__(self, table: str, md: str) -> None:
+    def __init__(self, test_file: str, table: str, md: str) -> None:
+        self.test_file = test_file
         self.table = table
         self.md = md
 
 def create_diffs(diff_dir: str) -> list[diffmarkdown]: 
-    tables = get_diff_tables_name(diff_dir)
-    csv_path_pattern = "{0}/{1}_{2}.csv"
+    test_file_diffs = get_diff_tables_map(diff_dir)
+    csv_path_pattern = "{0}/{1}/{2}_{3}.csv"
     mds: list[diffmarkdown] = []
-    for table_name in tables:
-        print("Create diff view for: " + table_name)
-        with open(
-            csv_path_pattern.format(diff_dir, table_name, "current"),
-            encoding="utf-8"
-        ) as current:
+    for test_file, diff_tables in test_file_diffs.items():
+        for table_name in diff_tables:
+            print("Create diff view for: " + table_name)
             with open(
-                csv_path_pattern.format(diff_dir, table_name, "reference"),
-                encoding="utf-8",
-            ) as reference:
-                diff_md = tabulate(
-                    create_diff_table(current, reference),
-                    headers="firstrow",
-                    tablefmt="github",
-                )
-                mds.append(diffmarkdown(table_name,diff_md))
+                csv_path_pattern.format(diff_dir, test_file, table_name, "current"),
+                encoding="utf-8"
+            ) as current:
+                with open(
+                    csv_path_pattern.format(diff_dir, test_file, table_name, "reference"),
+                    encoding="utf-8",
+                ) as reference:
+                    diff_md = tabulate(
+                        create_diff_table(current, reference),
+                        headers="firstrow",
+                        tablefmt="github",
+                    )
+                    mds.append(diffmarkdown(test_file, table_name,diff_md))    
+
     return mds
 
-
-def get_diff_tables_name(diff_dir: str) -> set[str]:
-    csv_files = [f for f in listdir(diff_dir) if isfile(diff_dir + "/" + f)]
-    diff_tables_name = set()
+def get_diff_tables_map(diff_dir: str) -> dict[str, set[str]]:
+    result = {}
     csv_current_pattern = re.compile(".+_current.csv")
-    for file in csv_files:
-        if csv_current_pattern.match(file):
-            diff_tables_name.add(str(file).replace("_current.csv", ""))
-        else:
-            diff_tables_name.add(str(file).replace("_reference.csv", ""))
-    return diff_tables_name
-
+    for dir in listdir(diff_dir):
+        tables = set()
+        test_file_dir = f'{diff_dir}/{dir}'
+        if not isfile(test_file_dir):
+            for f in listdir(test_file_dir):
+                if isfile(f'{test_file_dir}/{f}') and csv_current_pattern.match(f):
+                    tables.add(str(f).replace("_current.csv", ""))  
+            result[f'{str(dir)}'] = tables
+    return result
 
 def create_diff_table(c_list, r_list):
     c_list = list(csv.reader(c_list, delimiter=";", skipinitialspace=True))
