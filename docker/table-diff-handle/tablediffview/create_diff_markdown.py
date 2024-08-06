@@ -87,6 +87,9 @@ def create_diff_rows(
         # Skip csv header
         if len(changed_row) < 2 and len(reference_row) < 2:
             continue
+        # Skip csv header
+        if len(c_row) < 2 and len(r_row) < 2:
+            continue
         diff_row = []
         if changed_row is None:
             changed_row = []
@@ -102,6 +105,12 @@ def create_diff_rows(
         ):
             diff_table.append(diff_row)
 
+def is_table_header_row(c_row: list[str], r_row: list[str]) -> bool:
+    c_first_cell = next(iter(c_row), None) 
+    r_first_cell = next(iter(r_row), None)
+    if c_first_cell is None and r_first_cell is None:
+        return True
+    return not c_first_cell.isnumeric() and not r_first_cell.isnumeric()
 
 def is_table_header_row(changed_row: list[str], reference_row: list[str]) -> bool:
     changed_first_cell = next(iter(changed_row), None)
