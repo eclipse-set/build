@@ -65,25 +65,40 @@ def create_diff_table(c_list, r_list):
 def create_diff_rows(
     diff_table: list[list[str]], c_list: list[list[str]], r_list: list[list[str]]
 ):
-    i = 0
     for c_row, r_row in zip_longest(c_list, r_list):
+        # Skip csv header
+        if len(c_row) < 2 and len(r_row) < 2:
+            continue
         diff_row = []
         if c_row is None:
             c_row = []
         if r_row is None:
             r_row = []
-        is_diff = False
-        for c_cell, r_cell in zip_longest(list(c_row), list(r_row)):
-            c_data = parse_cell(c_cell)
-            r_data = parse_cell(r_cell)
-            if c_cell == r_cell:
-                diff_row.append(c_data.text)
-            else:
-                is_diff = True
-                diff_row.append(set_content_color(c_data, r_data))
-        if i < 5 or is_diff:
+
+        
+        # First cell of table data row is index number
+        is_diff = create_diff_cells(diff_row, c_row, r_row)
+        if is_table_header_row(c_row, r_row) or is_diff:
             diff_table.append(diff_row)
-        i += 1
+
+def is_table_header_row(c_row: list[str], r_row: list[str]) -> bool:
+    c_first_cell = next(iter(c_row), None) 
+    r_first_cell = next(iter(r_row), None)
+    if c_first_cell is None and r_first_cell is None:
+        return True
+    return not c_first_cell.isnumeric() and not r_first_cell.isnumeric()
+
+def create_diff_cells(diff_row: list[str], c_row: list[str], r_row: list[str]) -> bool:
+    is_diff = False
+    for c_cell, r_cell in zip_longest(list(c_row), list(r_row)):
+        c_data = parse_cell(c_cell)
+        r_data = parse_cell(r_cell)
+        if c_cell == r_cell:
+            diff_row.append(c_data.text)
+        else:
+            is_diff = True
+            diff_row.append(set_content_color(c_data, r_data))
+    return is_diff
 
 
 def parse_cell(cell: str | None) -> htmlcelldata | None:

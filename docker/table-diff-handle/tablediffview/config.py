@@ -3,8 +3,6 @@ import os
 # Configuration constants.
 class Configuration:
     env_file = os.getenv('GITHUB_ENV')
-    # Table header count
-    TABLE_HEADER_COUNT = 5
     # Highlight color for new data
     NEW_DATA_COLOR = "red"
     # Highlight color for old data
