@@ -36,10 +36,6 @@ The project maintains the following source code repositories:
 * https://github.com/eclipse-set/model
 * https://github.com/eclipse-set/build
 
-## Third-party Content
-
-For a complete list of all dependencies, see the `DEPENDENCIES` file.
-
 ## Cryptography
 
 Content may contain encryption software.
