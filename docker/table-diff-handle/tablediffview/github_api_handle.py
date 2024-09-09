@@ -2,6 +2,7 @@
 import re
 import requests
 from tablediffview.config import CONFIG
+from functools import reduce
 
 GITHUB_API_ISSUE_URL = (
     f"{CONFIG.GITHUB_API_URL}/{CONFIG.GITHUB_REPO_OWNER}/{CONFIG.GITHUB_REPO_NAME}/issues"
@@ -47,9 +48,15 @@ def create_new_issue(issue_title: str) -> str | None:
 @staticmethod
 def create_issue_comment(test_file: str, table_name: str, diff_md: str, issue_number: str):
     url = f"{GITHUB_API_ISSUE_URL}/{issue_number}/comments"
-    data = {"body": f"{CONFIG.DIFF_MD_HEADER} {test_file.upper()} - {table_name.capitalize()}\n {diff_md}"}
+    comment_header = f"{CONFIG.DIFF_MD_HEADER} {test_file.upper()} - {table_name.capitalize()}"
+    comment_content = f"{diff_md}"
+    content_ln = reduce((lambda x, y: x + y), map(len, comment_content.split()))
+    if content_ln > CONFIG.GITHUB_COMMENT_MAX_CHARACTER:
+        comment_content = f"The difference can't be presented because there are too many changes. To see the different please download the diff-file artifact"
     create_comment_reponse = requests.post(
-        url, headers=REQUEST_HEADER, json=data
+        url, headers=REQUEST_HEADER, json= {
+            "body": f"{comment_header} \n {comment_content}"
+        }
     )
     if create_comment_reponse.status_code == 201:
         print("Create comment successfully!")
