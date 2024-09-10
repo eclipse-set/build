@@ -3,7 +3,6 @@ import os
 
 # Configuration constants.
 class Configuration:
-    env_file = os.getenv("GITHUB_ENV")
     # Highlight color for new data
     NEW_DATA_COLOR = "red"
     # Highlight color for old data
@@ -19,6 +18,7 @@ class Configuration:
     # Diff markdown header
     DIFF_MD_HEADER = "# Table difference view:"
     GITHUB_COMMENT_MAX_CHARACTER = 65536
+    UPDATE_REFERENCE_COMMAND = "/update-table-reference"
 
 
 CONFIG = Configuration()

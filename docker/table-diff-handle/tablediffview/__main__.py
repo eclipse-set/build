@@ -23,7 +23,7 @@ def main():
         issue_number = pr_number
     else:
         issue_number = get_issue_number(branch_name)
-    if issue_number == "":
+    if not issue_number:
         raise SystemError(
             f"Pull Request/Issue number for branch: '{branch_name}' not found"
         )
@@ -32,14 +32,16 @@ def main():
         return
 
     diff_mds = create_diffs(diff_dir)
-    for diff_md in diff_mds:
+    diff_md_dir = f"{diff_dir}/diff-md"
+    os.makedirs(diff_md_dir)
+    for diff in diff_mds:
         with open(
-            f"{diff_dir}/diff-md/{diff_md.test_file}_{diff_md.table}_diff.csv",
+            f"{diff_md_dir}/{diff.test_file}_{diff.table}_diff.csv",
             "w",
             encoding="utf-8",
         ) as out:
-            out.write(diff_md.md)
-        create_issue_comment(diff_md.test_file, diff_md.table, diff_md.md, issue_number)
+            out.write(diff.md)
+        create_issue_comment(diff.test_file, diff.table, diff.md, issue_number)
 
 
 main()

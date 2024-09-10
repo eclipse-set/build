@@ -48,9 +48,9 @@ def create_new_issue(issue_title: str) -> str | None:
 @staticmethod
 def create_issue_comment(test_file: str, table_name: str, diff_md: str, issue_number: str):
     url = f"{GITHUB_API_ISSUE_URL}/{issue_number}/comments"
-    comment_header = f"{CONFIG.DIFF_MD_HEADER} {test_file.upper()} - {table_name.capitalize()}"
+    comment_header = f"{CONFIG.DIFF_MD_HEADER} {test_file.upper()} - {table_name.capitalize()} \n ### Table reference can update via by commenting `{CONFIG.UPDATE_REFERENCE_COMMAND}`."
     comment_content = f"{diff_md}"
-    content_ln = reduce((lambda x, y: x + y), map(len, comment_content.split()))
+    content_ln = reduce((lambda x, y: x + y), map(len, (comment_header + comment_content).split()))
     if content_ln > CONFIG.GITHUB_COMMENT_MAX_CHARACTER:
         comment_content = f"The difference can't be presented because there are too many changes. To see the different please download the diff-file artifact"
     create_comment_reponse = requests.post(
