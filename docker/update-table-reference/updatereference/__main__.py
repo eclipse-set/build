@@ -1,10 +1,7 @@
 import argparse
-from updatereference.github_api_request import get_artifact, get_head_branch_name
+from updatereference.github_api_request import get_artifact
 from updatereference.constant import CONSTANT
 import os
-from git import Repo
-import shutil
-import stat
 from zipfile import ZipFile
 from io import BytesIO
 
@@ -15,7 +12,6 @@ def main():
     pr_number = str(parser.parse_args().prNumber)
     if not pr_number or not pr_number.isnumeric():
         raise SystemError("Invalid pull request number")
-    branch_name = get_head_branch_name(pr_number)
     new_reference_zip = get_artifact(
         pr_number, CONSTANT.TABLE_REFERENCE_ARTIFACT_NAME_PATTERN
     )
