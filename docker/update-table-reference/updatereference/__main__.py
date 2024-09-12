@@ -21,7 +21,7 @@ def main():
 
 
 def update_table_reference(new_reference_zip):
-    table_reference_path = f"{CONSTANT.SET_TABLE_REFERENCE_PATH}"
+    reference_path = f"{CONSTANT.REPO_LOCAL_PATH}/{CONSTANT.SET_TABLE_REFERENCE_PATH}"
     try:
         buffer = BytesIO()
         with ZipFile(buffer, "w") as new_zip:
@@ -35,10 +35,9 @@ def update_table_reference(new_reference_zip):
                             zip_file.read(zip_content.filename),
                         )
                 for new_zip_content in new_zip.filelist:
-                    if os.path.exists(
-                        f"{table_reference_path}/{new_zip_content.filename}"
-                    ):
-                        new_zip.extract(new_zip_content, table_reference_path)
+                    if os.path.exists(f"{reference_path}/{new_zip_content.filename}"):
+                        new_zip.extract(new_zip_content, reference_path)
+                        print(f"Update table reference: {new_zip_content.filename}")
     except:
         raise SystemError()
 
