@@ -17,7 +17,7 @@ REQUEST_HEADER = {
 def get_issue_number(branch_name: str):
     extract_issue_name = re.findall(ISSUE_NAME_REGEX, branch_name)
     issue_title = "{0} - Tables different"
-    if not extract_issue_name:
+    if extract_issue_name:
         issue_title = issue_title.format(next(iter(extract_issue_name)))
     else:
         issue_title = issue_title.format(branch_name)

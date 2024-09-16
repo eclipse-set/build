@@ -22,7 +22,7 @@ class diffmarkdown:
 
 
 def create_diffs(diff_dir: str) -> list[diffmarkdown]:
-    test_file_diffs = get_test_file_diffs(diff_dir)
+    test_file_diffs = get_changed_test_files(diff_dir)
     csv_path_pattern = "{0}/{1}/{2}_{3}.csv"
     mds: list[diffmarkdown] = []
     for test_file, diff_tables in test_file_diffs.items():
@@ -49,7 +49,7 @@ def create_diffs(diff_dir: str) -> list[diffmarkdown]:
 
 
 # Get the list of table, which haved changed
-def get_test_file_diffs(diff_dir: str) -> dict[str, set[str]]:
+def get_changed_test_files(diff_dir: str) -> dict[str, set[str]]:
     result = {}
     csv_current_pattern = re.compile(".+_current.csv")
     for dir in listdir(diff_dir):
@@ -63,51 +63,60 @@ def get_test_file_diffs(diff_dir: str) -> dict[str, set[str]]:
     return result
 
 
-def create_diff_table(c_list, r_list):
-    c_list = list(csv.reader(c_list, delimiter=";", skipinitialspace=True))
-    r_list = list(csv.reader(r_list, delimiter=";", skipinitialspace=True))
+def create_diff_table(changed_list, reference_list):
+    changed_list = list(csv.reader(changed_list, delimiter=";", skipinitialspace=True))
+    reference_list = list(
+        csv.reader(reference_list, delimiter=";", skipinitialspace=True)
+    )
     diff_table = []
-    create_diff_rows(diff_table, c_list, r_list)
+    create_diff_rows(diff_table, changed_list, reference_list)
     return diff_table
 
 
 def create_diff_rows(
-    diff_table: list[list[str]], c_list: list[list[str]], r_list: list[list[str]]
+    diff_table: list[list[str]],
+    changed_list: list[list[str]],
+    reference_list: list[list[str]],
 ):
-    for c_row, r_row in zip_longest(c_list, r_list):
+    for changed_row, reference_row in zip_longest(changed_list, reference_list):
         # Skip csv header
-        if len(c_row) < 2 and len(r_row) < 2:
+        if len(changed_row) < 2 and len(reference_row) < 2:
             continue
         diff_row = []
-        if c_row is None:
-            c_row = []
-        if r_row is None:
-            r_row = []
+        if changed_row is None:
+            changed_row = []
+        if reference_row is None:
+            reference_row = []
 
-        # First cell of table data row is index number
-        is_diff = create_diff_cells(diff_row, c_row, r_row)
-        if is_table_header_row(c_row, r_row) or is_diff:
+        is_diff = create_diff_cells(diff_row, changed_row, reference_row)
+        # Only changed row will be added to diff_table, expect header row
+        if is_table_header_row(changed_row, reference_row) or is_diff:
             diff_table.append(diff_row)
 
 
-def is_table_header_row(c_row: list[str], r_row: list[str]) -> bool:
-    c_first_cell = next(iter(c_row), None)
-    r_first_cell = next(iter(r_row), None)
-    if c_first_cell is None and r_first_cell is None:
+def is_table_header_row(changed_row: list[str], reference_row: list[str]) -> bool:
+    changed_first_cell = next(iter(changed_row), None)
+    reference_first_cell = next(iter(reference_row), None)
+    # The first cell of table data row is always a number
+    if changed_first_cell is None and reference_first_cell is None:
         return True
-    return not c_first_cell.isnumeric() and not r_first_cell.isnumeric()
+    return not changed_first_cell.isnumeric() and not reference_first_cell.isnumeric()
 
 
-def create_diff_cells(diff_row: list[str], c_row: list[str], r_row: list[str]) -> bool:
+def create_diff_cells(
+    diff_row: list[str], changed_row: list[str], reference_row: list[str]
+) -> bool:
     is_diff = False
-    for c_cell, r_cell in zip_longest(list(c_row), list(r_row)):
-        c_data = parse_cell(c_cell)
-        r_data = parse_cell(r_cell)
-        if c_cell == r_cell:
-            diff_row.append(c_data.text)
+    for changed_cell, reference_cell in zip_longest(
+        list(changed_row), list(reference_row)
+    ):
+        changed_data = parse_cell(changed_cell)
+        refernece_data = parse_cell(reference_cell)
+        if changed_cell == reference_cell:
+            diff_row.append(changed_data.text)
         else:
             is_diff = True
-            diff_row.append(set_content_color(c_data, r_data))
+            diff_row.append(set_content_color(changed_data, refernece_data))
     return is_diff
 
 
