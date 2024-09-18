@@ -41,7 +41,7 @@ def create_new_issue(issue_title: str) -> str | None:
     
     if create_issue_response.status_code == 201:
         print(f"Create issue {issue_title} successfully!")
-        create_issue_response.json()["number"]
+        return create_issue_response.json()["number"]
     else:
         raise SystemError(create_issue_response.json()) 
 
