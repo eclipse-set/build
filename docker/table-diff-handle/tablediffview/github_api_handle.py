@@ -66,7 +66,7 @@ def create_issue_comment(test_file: str, table_name: str, diff_md: str, issue_nu
 
 @staticmethod
 def remove_old_comments(issue_number: str):
-    url = f'{GITHUB_API_ISSUE_URL}/comments'
+    url = f'{GITHUB_API_ISSUE_URL}/{issue_number}/comments'
     get_comments_response = requests.get(url, headers=REQUEST_HEADER)
     if get_comments_response.status_code != 200:
         raise ValueError(f"Not exsist Issue/PR with number {issue_number}")
