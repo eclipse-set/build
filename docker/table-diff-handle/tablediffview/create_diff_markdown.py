@@ -3,7 +3,7 @@ import html2text
 import re
 from tablediffview.config import CONFIG
 from itertools import zip_longest
-from os import listdir
+from os import listdir, path
 from os.path import isfile
 from tabulate import tabulate
 
@@ -32,18 +32,22 @@ def create_diffs(diff_dir: str) -> list[diffmarkdown]:
                 csv_path_pattern.format(diff_dir, test_file, table_name, "current"),
                 encoding="utf-8",
             ) as current:
-                with open(
-                    csv_path_pattern.format(
-                        diff_dir, test_file, table_name, "reference"
-                    ),
-                    encoding="utf-8",
-                ) as reference:
-                    diff_md = tabulate(
-                        create_diff_table(current, reference),
-                        headers="firstrow",
-                        tablefmt="github",
+                reference_csv_path = csv_path_pattern.format(
+                    diff_dir, test_file, table_name, "reference"
+                )
+                reference = None
+                if path.exists(reference_csv_path):
+                    reference = open(
+                        reference_csv_path,
+                        encoding="utf-8",
                     )
-                    mds.append(diffmarkdown(test_file, table_name, diff_md))
+
+                diff_md = tabulate(
+                    create_diff_table(current, reference),
+                    headers="firstrow",
+                    tablefmt="github",
+                )
+                mds.append(diffmarkdown(test_file, table_name, diff_md))
 
     return mds
 
@@ -65,8 +69,10 @@ def get_changed_test_files(diff_dir: str) -> dict[str, set[str]]:
 
 def create_diff_table(changed_list, reference_list):
     changed_list = list(csv.reader(changed_list, delimiter=";", skipinitialspace=True))
-    reference_list = list(
-        csv.reader(reference_list, delimiter=";", skipinitialspace=True)
+    reference_list = (
+        list(csv.reader(reference_list, delimiter=";", skipinitialspace=True))
+        if reference_list
+        else [[]]
     )
     diff_table = []
     create_diff_rows(diff_table, changed_list, reference_list)
@@ -89,8 +95,12 @@ def create_diff_rows(
             reference_row = []
 
         is_diff = create_diff_cells(diff_row, changed_row, reference_row)
-        # Only changed row will be added to diff_table, expect header row
-        if is_table_header_row(changed_row, reference_row) or is_diff:
+        # Only changed row will be added to diff_table, expect header row.
+        if (
+            not reference_row
+            or is_table_header_row(changed_row, reference_row)
+            or is_diff
+        ):
             diff_table.append(diff_row)
 
 
