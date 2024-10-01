@@ -25,7 +25,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Github CLI image
-        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./docker/github-cli/Dockerfile
@@ -33,7 +33,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/eclipse-set/github-cli:latest
 
       - name: Build and push Table-Diff-View-handle
-        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: ./docker/table-diff-handle
           file: ./docker/table-diff-handle/Dockerfile
