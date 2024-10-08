@@ -5,9 +5,8 @@ from tablediffview.github_api_handle import (
     get_issue_number,
     remove_old_comments,
     create_issue_comment,
+    create_new_issue,
 )
-from zipfile import ZipFile, ZIP_DEFLATED
-from io import BytesIO
 
 
 def main():
@@ -20,7 +19,7 @@ def main():
     pr_number = parser.parse_args().prNumber
     issue_number = ""
     if pr_number:
-        issue_number = pr_number
+        issue_number = create_new_issue(f"{branch_name} - Tables different", pr_number)
     else:
         issue_number = get_issue_number(branch_name)
     if not issue_number:
