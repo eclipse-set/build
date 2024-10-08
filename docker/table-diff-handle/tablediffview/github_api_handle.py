@@ -34,11 +34,14 @@ def get_issue_number(branch_name: str):
 
 
 @staticmethod
-def create_new_issue(issue_title: str) -> str | None:
+def create_new_issue(issue_title: str, pr_number: str = None) -> str | None:
     create_issue_response = requests.post(
         GITHUB_API_ISSUE_URL,
         headers=REQUEST_HEADER,
-        json={"title": issue_title},
+        json={
+            "title": issue_title,
+            "body": f"- Link to eclipse-set/set#{pr_number} \n" if pr_number else "",
+        },
     )
 
     if create_issue_response.status_code == 201:
