@@ -5,7 +5,7 @@ from tablediffview.github_api_handle import (
     get_issue_number,
     remove_old_comments,
     create_issue_comment,
-    create_new_issue,
+    close_diff_issues,
 )
 
 
@@ -17,18 +17,18 @@ def main():
     diff_dir = parser.parse_args().diffDir
     branch_name = parser.parse_args().branchName
     pr_number = parser.parse_args().prNumber
-    issue_number = ""
-    if pr_number:
-        issue_number = create_new_issue(f"{branch_name} - Tables different", pr_number)
-    else:
-        issue_number = get_issue_number(branch_name)
+
+    if not os.path.exists(diff_dir) or not os.listdir(diff_dir):
+        close_diff_issues(branch_name)
+        return
+
+    issue_number = get_issue_number(branch_name, pr_number)
     if not issue_number:
         raise SystemError(
             f"Pull Request/Issue number for branch: '{branch_name}' not found"
         )
+
     remove_old_comments(issue_number)
-    if not os.path.exists(diff_dir) or not os.listdir(diff_dir):
-        return
 
     diff_mds = create_diffs(diff_dir)
     diff_md_dir = f"{diff_dir}/diff-md"
