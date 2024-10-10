@@ -112,15 +112,15 @@ def close_diff_issues(branch_name: str):
         if branch_name == "main":
             _close_diff_issues_of_closed_pr(issue)
 
-        # if issue["title"] and issue["title"].startswith(branch_name):
-        #     close_issue_response = requests.patch(
-        #         f"{GITHUB_API_ISSUE_URL}/{issue['number']}",
-        #         json={"state": "closed"},
-        #         headers=REQUEST_HEADER,
-        #     )
-        #     if close_issue_response.status_code != 200:
-        #         raise SystemError(f"Can't close issue #{issue['number']}")
-        #     print(f"Close issues #{issue['number']}")
+        if issue["title"] and issue["title"].startswith(branch_name):
+            close_issue_response = requests.patch(
+                f"{GITHUB_API_ISSUE_URL}/{issue['number']}",
+                json={"state": "closed"},
+                headers=REQUEST_HEADER,
+            )
+            if close_issue_response.status_code != 200:
+                raise SystemError(f"Can't close issue #{issue['number']}")
+            print(f"Close issues #{issue['number']}")
 
 
 def _close_diff_issues_of_closed_pr(issue):
