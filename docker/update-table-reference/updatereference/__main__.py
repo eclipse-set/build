@@ -9,7 +9,7 @@ from io import BytesIO
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--issueNumber", required=True, type=str)
-    issue_number = str(parser.parse_args().issue_number)
+    issue_number = str(parser.parse_args().issueNumber)
     pr_number = get_reference_pr(issue_number)
     if not pr_number or not pr_number.isnumeric():
         raise SystemError("Invalid pull request number")
