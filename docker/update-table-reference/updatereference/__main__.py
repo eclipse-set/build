@@ -11,7 +11,7 @@ def main():
     parser.add_argument("--issueNumber", required=True, type=str)
     issue_number = str(parser.parse_args().issueNumber)
     pr_number = get_reference_pr(issue_number)
-    if not pr_number or not pr_number.isnumeric():
+    if not pr_number:
         raise SystemError("Invalid pull request number")
     new_reference_zip = get_artifact(
         pr_number, CONSTANT.TABLE_REFERENCE_ARTIFACT_NAME_PATTERN
