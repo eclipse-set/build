@@ -3,7 +3,7 @@ import requests
 from tablediffview.config import CONFIG
 from functools import reduce
 
-GITHUB_API_ISSUE_URL = f"{CONFIG.GITHUB_API_URL}/{CONFIG.GITHUB_REPO_OWNER}/{CONFIG.GITHUB_REPO_NAME}/issues"
+GITHUB_API_ISSUE_URL = f"{CONFIG.GITHUB_API_URL}/{CONFIG.GITHUB_REPO}/issues"
 
 ISSUE_NAME_REGEX = r"main|^release/\d*.\d*|^v\d*.\d*.\d*"
 REQUEST_HEADER = {
@@ -13,7 +13,7 @@ REQUEST_HEADER = {
 
 
 @staticmethod
-def get_issue_number(branch_name: str):
+def get_issue_number(branch_name: str, pr_number: str = None):
     extract_issue_name = re.findall(ISSUE_NAME_REGEX, branch_name)
     issue_title = "{0} - Tables different"
     if extract_issue_name:
@@ -21,7 +21,9 @@ def get_issue_number(branch_name: str):
     else:
         issue_title = issue_title.format(branch_name)
     get_issues_response = requests.get(
-        GITHUB_API_ISSUE_URL, headers=REQUEST_HEADER, json={"state": "open"}
+        GITHUB_API_ISSUE_URL,
+        headers=REQUEST_HEADER,
+        params={"state": "open", "labels": CONFIG.TABLE_DIFF_ISSUE_LABEL},
     )
     if get_issues_response.status_code != 200:
         raise SystemExit(get_issues_response.json())
@@ -30,7 +32,7 @@ def get_issue_number(branch_name: str):
         if issue["title"] == issue_title:
             return issue["number"]
 
-    return create_new_issue(issue_title)
+    return create_new_issue(issue_title, pr_number)
 
 
 @staticmethod
@@ -41,6 +43,7 @@ def create_new_issue(issue_title: str, pr_number: str = None) -> str | None:
         json={
             "title": issue_title,
             "body": f"- Link to eclipse-set/set#{pr_number} \n" if pr_number else "",
+            "labels": [CONFIG.TABLE_DIFF_ISSUE_LABEL],
         },
     )
 
@@ -94,3 +97,49 @@ def remove_old_comments(issue_number: str):
                 if delete_response.status_code != 204:
                     print(f"Delete comment with number: \"{comment['id']}\" failed")
                     raise SystemError(delete_response.json())
+
+
+@staticmethod
+def close_diff_issues(branch_name: str):
+    get_issues_response = requests.get(
+        f"{GITHUB_API_ISSUE_URL}",
+        headers=REQUEST_HEADER,
+        params={"labels": CONFIG.TABLE_DIFF_ISSUE_LABEL},
+    )
+    if get_issues_response.status_code != 200:
+        raise SystemError("Can't get issues of the repository")
+    for issue in get_issues_response.json():
+        if branch_name == "main":
+            _close_diff_issues_of_closed_pr(issue)
+
+        if issue["title"] and issue["title"].startswith(branch_name):
+            close_issue_response = requests.patch(
+                f"{GITHUB_API_ISSUE_URL}/{issue['number']}",
+                json={"state": "closed"},
+                headers=REQUEST_HEADER,
+            )
+            if close_issue_response.status_code != 200:
+                raise SystemError(f"Can't close issue #{issue['number']}")
+            print(f"Close issues #{issue['number']}")
+
+
+def _close_diff_issues_of_closed_pr(issue):
+    if issue["title"] and issue["title"].endswith(CONFIG.TABLE_DIFF_ISSUE_TITLE_TRAIL):
+        branch_name = (
+            issue["title"].replace(CONFIG.TABLE_DIFF_ISSUE_TITLE_TRAIL, "").strip()
+        )
+        get_branch_response = requests.get(
+            f"{CONFIG.GITHUB_API_URL}/{CONFIG.GITHUB_REPO}/branches/{branch_name}",
+            headers=REQUEST_HEADER,
+        )
+        if get_branch_response.status_code == 200:
+            return
+
+        close_issue_response = requests.patch(
+            f"{GITHUB_API_ISSUE_URL}/{issue['number']}",
+            json={"state": "closed"},
+            headers=REQUEST_HEADER,
+        )
+        if close_issue_response.status_code != 200:
+            raise SystemError(f"Can't close issue #{issue['number']}")
+        print(f"Close issues #{issue['number']}")
