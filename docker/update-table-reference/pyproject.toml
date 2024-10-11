@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "update-table-reference"
+name = "updatereference"
 version = "0.1.0"
 description = ""
 authors = ["Quang Truong <truong.quang@scheidt-bachmann-st.de>"]
