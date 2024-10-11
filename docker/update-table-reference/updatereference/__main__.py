@@ -1,5 +1,5 @@
 import argparse
-from updatereference.github_api_request import get_artifact
+from updatereference.github_api_request import get_artifact, get_reference_pr
 from updatereference.constant import CONSTANT
 import os
 from zipfile import ZipFile
@@ -8,8 +8,9 @@ from io import BytesIO
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prNumber", required=True, type=str)
-    pr_number = str(parser.parse_args().prNumber)
+    parser.add_argument("--issueNumber", required=True, type=str)
+    issue_number = str(parser.parse_args().issue_number)
+    pr_number = get_reference_pr(issue_number)
     if not pr_number or not pr_number.isnumeric():
         raise SystemError("Invalid pull request number")
     new_reference_zip = get_artifact(

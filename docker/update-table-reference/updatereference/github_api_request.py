@@ -7,6 +7,29 @@ from io import BytesIO
 from datetime import datetime, timezone
 
 
+def get_reference_pr(issue_number: str):
+    if not issue_number:
+        return None
+    get_issue_reposne = github_api_request(
+        method="get", access_path=f"issues/{issue_number}"
+    )
+    if get_issue_reposne.status_code != 200:
+        raise SystemError(f"Can't get issues #{issue_number}")
+    issue_tilte = get_issue_reposne.json()["title"]
+    if not issue_tilte or not issue_tilte.endswith(
+        CONSTANT.TABLE_DIFF_ISSUE_TITLE_TRAIL
+    ):
+        raise SystemError(f"Missing or Wrong title of talbe diff issue #{issue_number}")
+    branch_name = issue_tilte.replace(CONSTANT.TABLE_DIFF_ISSUE_TITLE_TRAIL, "").strip()
+    get_prs_response = github_api_request(method="get", access_path="pulls")
+    if get_prs_response.status_code != 200:
+        raise SystemError("Can't get pull request of repository")
+    for pr in get_prs_response.json():
+        if pr["head"]["ref"] == branch_name:
+            return pr["number"]
+    return None
+
+
 def get_artifact(pr_number: str, artifact_name: str):
     last_run = get_last_run(pr_number)
     # Wait the build process
