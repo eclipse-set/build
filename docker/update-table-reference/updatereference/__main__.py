@@ -36,7 +36,7 @@ def update_table_reference(new_reference_zip):
                             zip_file.read(zip_content.filename),
                         )
                 for new_zip_content in new_zip.filelist:
-                    if os.path.exists(f"{reference_path}/{new_zip_content.filename}"):
+                    if os.path.exists(reference_path):
                         new_zip.extract(new_zip_content, reference_path)
                         print(f"Update table reference: {new_zip_content.filename}")
     except:
