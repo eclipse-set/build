@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "update-table-reference"
+version = "0.1.0"
+description = ""
+authors = ["Quang Truong <truong.quang@scheidt-bachmann-st.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
