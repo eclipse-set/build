@@ -66,6 +66,7 @@ def get_changed_test_files(diff_dir: str) -> dict[str, set[str]]:
             result[f"{str(dir)}"] = tables
     return result
 
+
 def create_diff_table(changed_list, reference_list):
     changed_list = list(csv.reader(changed_list, delimiter=";", skipinitialspace=True))
     reference_list = (
@@ -101,6 +102,7 @@ def create_diff_rows(
             or is_diff
         ):
             diff_table.append(diff_row)
+
 
 def is_table_header_row(changed_row: list[str], reference_row: list[str]) -> bool:
     changed_first_cell = next(iter(changed_row), None)
