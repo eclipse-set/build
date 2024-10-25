@@ -5,7 +5,7 @@ class Constanst:
     GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
     GITHUB_API_URL = "https://api.github.com/repos"
 
-    SET_REPO = "truongquangsb/set"
+    SET_REPO = os.environ.get("GITHUB_REPO", "eclipse-set/set")
 
     TABLE_REFERENCE_ARTIFACT_NAME_PATTERN = "table-csv-{}"
     BUILD_SET_WORK_FLOW_ID = 63604658
