@@ -6,6 +6,8 @@ from tablediffview.github_api_handle import (
     remove_old_comments,
     create_issue_comment,
     close_diff_issues,
+    close_diff_issues_of_closed_pr,
+    requestargs,
 )
 
 
@@ -14,15 +16,17 @@ def main():
     parser.add_argument("--diffDir", required=True, type=str)
     parser.add_argument("--branchName", required=True, type=str)
     parser.add_argument("--prNumber", required=False, type=str)
+    parser.add_argument("--runId", required=True, type=str)
     diff_dir = parser.parse_args().diffDir
     branch_name = parser.parse_args().branchName
     pr_number = parser.parse_args().prNumber
-
+    run_id = parser.parse_args().runId
+    request_args = requestargs(branch_name, run_id, pr_number)
+    close_diff_issues_of_closed_pr(branch_name)
     if not os.path.exists(diff_dir) or not os.listdir(diff_dir):
         close_diff_issues(branch_name)
         return
-
-    issue_number = get_issue_number(branch_name, pr_number)
+    issue_number = get_issue_number(request_args)
     if not issue_number:
         raise SystemError(
             f"Pull Request/Issue number for branch: '{branch_name}' not found"
