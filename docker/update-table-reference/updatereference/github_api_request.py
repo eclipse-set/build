@@ -33,10 +33,11 @@ def get_reference_pr(issue_number: str):
 def get_artifact(pr_number: str, artifact_name: str):
     last_run = get_last_run(pr_number)
     # Wait the build process
-    if last_run["status"] == "in_progress":
+    while last_run["status"] == "in_progress":
         print(f"Wait build process: {datetime.now().ctime()}")
-        time.sleep(60)
+        time.sleep(120)
         last_run = get_last_run(pr_number=None, run_id=last_run["id"])
+    
 
     target_artifact_name = artifact_name.format(last_run["run_number"])
     get_run_artifacts_response = github_api_request(
@@ -50,7 +51,7 @@ def get_artifact(pr_number: str, artifact_name: str):
         f"Get artifact {target_artifact_name} from build number: {last_run['run_number']}, id: {last_run['id']}"
     )
     for artifact in get_run_artifacts_response.json()["artifacts"]:
-        if artifact and artifact["name"] == target_artifact_name:
+        if artifact and artifact["name"] == target_artifact_name and not artifact["expired"]:
             download_artifact_response = github_api_request(
                 method="get", access_path=f"actions/artifacts/{artifact['id']}/zip"
             )
