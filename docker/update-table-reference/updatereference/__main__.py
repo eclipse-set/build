@@ -9,9 +9,9 @@ from io import BytesIO
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--issueNumber", required=True, type=str)
-    parser.add_argument("--tableToUpdate", required=False, type=str)
+    parser.add_argument("--commentBody", required=True, type=str)
     issue_number = str(parser.parse_args().issueNumber)
-    table_to_update = str(parser.parse_args().tableToUpdate)
+    commentBody = str(parser.parse_args().commentBody)
     pr_number = get_reference_pr(issue_number)
     if not pr_number:
         raise SystemError("Invalid pull request number")
@@ -20,6 +20,7 @@ def main():
     )
     if not new_reference_zip:
         raise SystemError("Can't download the new reference artifact")
+    table_to_update = commentBody.replace("/update-table-reference", "").strip()
     update_table_reference(new_reference_zip, table_to_update)
 
 
@@ -32,7 +33,7 @@ def update_table_reference(new_reference_zip, table_to_update: str = None):
                 for zip_content in zip_file.filelist:
                     if zip_content.filename.endswith("current.csv") and (
                         not table_to_update
-                        or zip_content.filename.startswith(table_to_update.lower())
+                        or table_to_update.lower() in zip_content.filename
                     ):
                         new_zip.writestr(
                             zip_content.filename.replace(
