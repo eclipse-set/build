@@ -7,7 +7,14 @@ from io import BytesIO
 from datetime import datetime, timezone
 
 
-def get_reference_pr(issue_number: str):
+class issueInfo:
+    def __init__(self, issue_number: str, pr_number: str, branch_name: str):
+        self.issue_number = issue_number
+        self.pr_number = pr_number
+        self.branch_name = branch_name
+
+
+def get_issue_info(issue_number: str):
     if not issue_number:
         return None
     get_issue_reposne = github_api_request(
@@ -21,23 +28,28 @@ def get_reference_pr(issue_number: str):
     ):
         raise SystemError(f"Missing or Wrong title of talbe diff issue #{issue_number}")
     branch_name = issue_tilte.replace(CONSTANT.TABLE_DIFF_ISSUE_TITLE_TRAIL, "").strip()
+    if branch_name == "main":
+        return issueInfo(issue_number=issue_number, pr_number=None, branch_name="main")
     get_prs_response = github_api_request(method="get", access_path="pulls")
     if get_prs_response.status_code != 200:
         raise SystemError("Can't get pull request of repository")
     for pr in get_prs_response.json():
         if pr["head"]["ref"] == branch_name:
-            return pr["number"]
+            return issueInfo(
+                issue_number=issue_number,
+                pr_number=pr["number"],
+                branch_name=branch_name,
+            )
     return None
 
 
-def get_artifact(pr_number: str, artifact_name: str):
-    last_run = get_last_run(pr_number)
+def get_artifact(issue_info: issueInfo, artifact_name: str):
+    last_run = get_last_run(issue_info)
     # Wait the build process
     while last_run["status"] == "in_progress":
         print(f"Wait build process: {datetime.now().ctime()}")
         time.sleep(120)
-        last_run = get_last_run(pr_number=None, run_id=last_run["id"])
-    
+        last_run = get_last_run(issue_info, run_id=last_run["id"])
 
     target_artifact_name = artifact_name.format(last_run["run_number"])
     get_run_artifacts_response = github_api_request(
@@ -51,7 +63,11 @@ def get_artifact(pr_number: str, artifact_name: str):
         f"Get artifact {target_artifact_name} from build number: {last_run['run_number']}, id: {last_run['id']}"
     )
     for artifact in get_run_artifacts_response.json()["artifacts"]:
-        if artifact and artifact["name"] == target_artifact_name and not artifact["expired"]:
+        if (
+            artifact
+            and artifact["name"] == target_artifact_name
+            and not artifact["expired"]
+        ):
             download_artifact_response = github_api_request(
                 method="get", access_path=f"actions/artifacts/{artifact['id']}/zip"
             )
@@ -65,15 +81,15 @@ def get_artifact(pr_number: str, artifact_name: str):
         return None
     re_run_workflows(last_run)
 
-    return get_artifact(pr_number, artifact_name)
+    return get_artifact(issue_info, artifact_name)
 
 
-def get_last_run(pr_number: str, run_id: str = None):
+def get_last_run(issue_info: issueInfo, run_id: str = None):
     last_build = None
     if run_id:
         last_build = get_run(run_id)
     else:
-        branch_name = get_head_branch_name(pr_number)
+        branch_name = issue_info.branch_name
         get_workflow_run_response = github_api_request(
             method="get",
             access_path=f"actions/workflows/{CONSTANT.BUILD_SET_WORK_FLOW_ID}/runs",
@@ -84,7 +100,7 @@ def get_last_run(pr_number: str, run_id: str = None):
         runs_data = get_workflow_run_response.json()["workflow_runs"]
         last_build = max(runs_data, key=lambda run: run["run_number"])
     if not last_build:
-        raise SystemError(f"Can't get last build for pull request number: {pr_number}")
+        raise SystemError(f"Can't get last build for branch: {issue_info.branch_name}")
     return last_build
 
 

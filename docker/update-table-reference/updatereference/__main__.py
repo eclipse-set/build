@@ -1,5 +1,5 @@
 import argparse
-from updatereference.github_api_request import get_artifact, get_reference_pr
+from updatereference.github_api_request import get_artifact, get_issue_info
 from updatereference.constant import CONSTANT
 import os
 from zipfile import ZipFile
@@ -12,11 +12,11 @@ def main():
     parser.add_argument("--commentBody", required=True, type=str)
     issue_number = str(parser.parse_args().issueNumber)
     commentBody = str(parser.parse_args().commentBody)
-    pr_number = get_reference_pr(issue_number)
-    if not pr_number:
-        raise SystemError("Invalid pull request number")
+    issue_info = get_issue_info(issue_number)
+    if not issue_info or not issue_info.branch_name:
+        raise SystemError("Can't find relevant pull request/branch")
     new_reference_zip = get_artifact(
-        pr_number, CONSTANT.TABLE_REFERENCE_ARTIFACT_NAME_PATTERN
+        issue_info, CONSTANT.TABLE_REFERENCE_ARTIFACT_NAME_PATTERN
     )
     if not new_reference_zip:
         raise SystemError("Can't download the new reference artifact")

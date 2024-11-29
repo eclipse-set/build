@@ -141,7 +141,7 @@ def close_diff_issues(branch_name: str):
 
 
 def close_diff_issues_of_closed_pr(branch_name: str):
-    if not branch_name == "main":
+    if branch_name != "main":
         return
     get_issues_response = __github_api_resquest(method="get", access_path="issues")
     if get_issues_response.status_code != 200:
