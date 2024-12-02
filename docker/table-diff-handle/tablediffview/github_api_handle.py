@@ -41,9 +41,23 @@ def get_issue_number(request_args: requestargs):
     open_issues = get_issues_response.json()
     for issue in open_issues:
         if issue["title"] == request_args.issue_title:
+            update_issue_body(
+                issue["number"],
+                __get_issue_body_content(request_args.run_id, request_args.pr_number),
+            )
             return issue["number"]
 
     return create_new_issue(request_args)
+
+
+def update_issue_body(issue_number: str, new_content: str):
+    update_body_resposne = __github_api_resquest(
+        method="post",
+        access_path=f"issues/{issue_number}",
+        content={"body": new_content},
+    )
+    if update_body_resposne.status_code != 201:
+        raise SystemError(f"Cant update issue body of issue#{issue_number}")
 
 
 def create_new_issue(request_args: requestargs) -> str | None:
