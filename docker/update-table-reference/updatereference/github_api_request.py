@@ -79,7 +79,7 @@ def get_artifact(issue_info: issueInfo, artifact_name: str):
     now = datetime.now(timezone.utc)
     if (now - last_run_completed_at).days < 1:
         return None
-    re_run_workflows(last_run)
+    re_run_workflows(last_run["id"])
 
     return get_artifact(issue_info, artifact_name)
 
