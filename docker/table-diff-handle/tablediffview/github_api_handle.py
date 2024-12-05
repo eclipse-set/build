@@ -172,7 +172,7 @@ def close_diff_issues_of_closed_pr(branch_name: str):
                 headers=REQUEST_HEADER,
             )
             if get_branch_response.status_code == 200:
-                return
+                continue
             __close_issue_request(issue["number"])
 
 
