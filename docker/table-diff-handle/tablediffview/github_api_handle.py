@@ -52,11 +52,11 @@ def get_issue_number(request_args: requestargs):
 
 def update_issue_body(issue_number: str, new_content: str):
     update_body_resposne = __github_api_resquest(
-        method="post",
+        method="patch",
         access_path=f"issues/{issue_number}",
         content={"body": new_content},
     )
-    if update_body_resposne.status_code != 201:
+    if update_body_resposne.status_code != 200:
         raise SystemError(f"Cant update issue body of issue#{issue_number}")
 
 
