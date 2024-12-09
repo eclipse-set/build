@@ -41,6 +41,8 @@ def update_table_reference(new_reference_zip, table_to_update: str = None):
                             ),
                             zip_file.read(zip_content.filename),
                         )
+                if table_to_update and not new_zip.filelist:
+                    raise SystemError("The target table no need to update reference")
                 for new_zip_content in new_zip.filelist:
                     if os.path.exists(reference_path):
                         new_zip.extract(new_zip_content, reference_path)
