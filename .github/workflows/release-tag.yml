@@ -53,6 +53,7 @@ jobs:
         git status
         git add -A
         git commit --allow-empty -m "Release ${{ inputs.version }}" 
+        git push
         git status
         git tag -d v${{ inputs.version }} || true
         git tag v${{ inputs.version }}
