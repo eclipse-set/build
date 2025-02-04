@@ -1,9 +1,5 @@
 name: 'Fetch Main Table CSV Reference'
 description: 'Fetches the currently table csv of the main build'
-inputs:
-  repo:
-    description: 'Repository to fetch the table csv from'
-    required: true
 
 env:
   REFERENCE_PATH: java/bundles/org.eclipse.set.swtbot/test_rest/table_reference
@@ -14,7 +10,7 @@ runs:
     - name: Get last Build Number
       shell: bash
       run: |
-        LAST_MAIN_BUILD=$(gh run list --repo ${{ inputs.repo }} --workflow "Build SET" --branch main --json number,databaseId --jq '([.[].number] | max) as $m | .[] | select(.number == $m)')
+        LAST_MAIN_BUILD=$(gh run list --repo ${{ github.repository }} --workflow "Build SET" --branch main --json number,databaseId --jq '([.[].number] | max) as $m | .[] | select(.number == $m)')
         LAST_BUILD_NUMBER=$(echo $LAST_MAIN_BUILD | jq -r '.number')
         LAST_BUILD_ID=$(echo $LAST_MAIN_BUILD | jq -r '.databaseId')
         echo "Last Build Number & ID: $LAST_BUILD_NUMBER, $LAST_BUILD_ID"
@@ -45,9 +41,11 @@ runs:
       if: steps.download-artifact.outcome == 'failure'
       uses: actions/download-artifact@v4
       with:
-        name: table-csv-${{ env.LAST_BUILD_NUMBER }}
+        name: "table-csv-${{ env.LAST_BUILD_NUMBER }}"
         run-id: ${{ env.LAST_BUILD_ID }}
         path: main-reference-csv
+        github-token: ${{ env.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
     
     - name: Update current table csv
       shell: bash
