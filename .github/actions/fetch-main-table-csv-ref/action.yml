@@ -1,0 +1,74 @@
+name: 'Fetch Main Table CSV Reference'
+description: 'Fetches the currently table csv of the main build'
+inputs:
+  repo:
+    description: "Execute repository"
+    required: true
+env:
+  REFERENCE_PATH: java/bundles/org.eclipse.set.swtbot/test_rest/table_reference
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get last Build Number
+      shell: bash
+      run: |
+        LAST_MAIN_BUILD=$(gh run list --repo ${{ inputs.repo }} --workflow "Build SET" --branch main --json number,databaseId --jq '([.[].number] | max) as $m | .[] | select(.number == $m)')
+        LAST_BUILD_NUMBER=$(echo $LAST_MAIN_BUILD | jq -r '.number')
+        LAST_BUILD_ID=$(echo $LAST_MAIN_BUILD | jq -r '.databaseId')
+        echo "Last Build Number & ID: $LAST_BUILD_NUMBER, $LAST_BUILD_ID"
+        echo "LAST_BUILD_NUMBER=$LAST_BUILD_NUMBER" >> $GITHUB_ENV
+        echo "LAST_BUILD_ID=$LAST_BUILD_ID" >> $GITHUB_ENV
+    
+    - name: Download Main Table CSV Reference
+      id: download-artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: "table-csv-${{ env.LAST_BUILD_NUMBER }}"
+        run-id: ${{ env.LAST_BUILD_ID }}
+        path: main-reference-csv
+        github-token: ${{ env.GITHUB_TOKEN }}
+        repository: ${{ inputs.repo }}
+      continue-on-error: true
+    
+    - name: Trigger Main Build If Not Found
+      if: steps.download-artifact.outcome == 'failure'
+      shell: bash
+      run: |
+        echo "Rerun main build ${{ env.LAST_BUILD_ID }}"
+        gh run rerun ${{ env.LAST_BUILD_ID }} --repo ${{ inputs.repo }}
+        echo "Waiting for the build to finish..."
+        gh run watch ${{ env.LAST_BUILD_ID }} --repo ${{ inputs.repo }} --interval 60
+    
+    - name: Redownload Main Table CSV Reference
+      if: steps.download-artifact.outcome == 'failure'
+      uses: actions/download-artifact@v4
+      with:
+        name: "table-csv-${{ env.LAST_BUILD_NUMBER }}"
+        run-id: ${{ env.LAST_BUILD_ID }}
+        path: main-reference-csv
+        github-token: ${{ env.GITHUB_TOKEN }}
+        repository: ${{ inputs.repo }}
+    
+    - name: Update current table csv
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python -c "
+        import os
+        import shutil
+
+        reference_path = 'java/bundles/org.eclipse.set.swtbot/test_res/table_reference'
+        for root, _, files in os.walk('main-reference-csv'):
+            for file in files:
+                if file.endswith('_reference.csv'):
+                    continue
+                source_path = os.path.join(root, file)
+                parent_dest_path = os.path.join(reference_path, os.path.basename(root))
+                dest_path = f'{parent_dest_path}/{file.replace(\"_current.csv\", \"_reference.csv\")}'
+                if not os.path.exists(parent_dest_path):
+                    os.makedirs(parent_dest_path)
+                # Datei verschieben
+                shutil.move(source_path, dest_path)
+                print(f'Moved: {source_path} -> {dest_path}')
+        "
