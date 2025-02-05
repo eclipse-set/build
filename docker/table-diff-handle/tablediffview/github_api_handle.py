@@ -23,7 +23,7 @@ class requestargs:
         self.issue_title = self.__get_issue_title()
 
     def __get_issue_title(self):
-        extract_issue_name = re.findall(ISSUE_NAME_REGEX, self.branch_name)
+        extract_issue_name = re.match(ISSUE_NAME_REGEX, self.branch_name)
         issue_title_pattern = "{0} - Tables different"
         if extract_issue_name:
             return issue_title_pattern.format(next(iter(extract_issue_name)))
