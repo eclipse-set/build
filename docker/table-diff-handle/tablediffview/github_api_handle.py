@@ -7,8 +7,6 @@ from typing import Literal
 import urllib.parse
 
 GITHUB_API_ISSUE_URL = f"{CONFIG.GITHUB_API_URL}/{CONFIG.GITHUB_REPO}/issues"
-
-ISSUE_NAME_REGEX = r"main|^release/\d*.\d*|^v\d*.\d*.\d*"
 REQUEST_HEADER = {
     "Authorization": f"token {CONFIG.GITHUB_TOKEN}",
     "Content-Type": "application/vnd.github+json",
@@ -20,15 +18,8 @@ class requestargs:
         self.branch_name = branch_name
         self.run_id = run_id
         self.pr_number = pr_number
-        self.issue_title = self.__get_issue_title()
-
-    def __get_issue_title(self):
-        extract_issue_name = re.match(ISSUE_NAME_REGEX, self.branch_name)
-        issue_title_pattern = "{0} - Tables different"
-        if extract_issue_name:
-            return issue_title_pattern.format(next(iter(extract_issue_name)))
-        return issue_title_pattern.format(self.branch_name)
-
+        self.issue_title = f"{branch_name} - Tables different"
+        
 
 def get_issue_number(request_args: requestargs):
     get_issues_response = __github_api_resquest(
