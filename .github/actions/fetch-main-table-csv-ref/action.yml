@@ -13,7 +13,7 @@ runs:
     - name: Get last Build Number
       shell: bash
       run: |
-        LAST_MAIN_BUILD=$(gh run list --repo ${{ inputs.repo }} --workflow "Build SET" --branch main --json number,databaseId --jq '([.[].number] | max) as $m | .[] | select(.number == $m)')
+        LAST_MAIN_BUILD=$(gh run list --repo ${{ inputs.repo }} --workflow "Build SET" --branch main --status completed --json number,databaseId --jq '([.[].number] | max) as $m | .[] | select(.number == $m)')
         LAST_BUILD_NUMBER=$(echo $LAST_MAIN_BUILD | jq -r '.number')
         LAST_BUILD_ID=$(echo $LAST_MAIN_BUILD | jq -r '.databaseId')
         echo "Last Build Number & ID: $LAST_BUILD_NUMBER, $LAST_BUILD_ID"
