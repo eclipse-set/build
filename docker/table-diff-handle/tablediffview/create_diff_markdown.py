@@ -86,13 +86,24 @@ def create_diff_rows(
 ):
     for changed_row, reference_row in zip_longest(changed_list, reference_list):
         # Skip csv header
-        if len(changed_row) < 2 and len(reference_row) < 2:
+        if (
+            changed_row
+            and reference_row
+            and len(changed_row) < 2
+            and len(reference_row) < 2
+        ):
             continue
         diff_row = []
-        if changed_row is None:
-            changed_row = []
-        if reference_row is None:
-            reference_row = []
+
+        # When one of compare row is empty
+        if changed_row is None or reference_row is None:
+            create_diff_cells(
+                diff_row,
+                [] if changed_row is None else changed_row,
+                [] if reference_row is None else reference_row,
+            )
+            diff_table.append(diff_row)
+            continue
 
         is_diff = create_diff_cells(diff_row, changed_row, reference_row)
         # Only changed row will be added to diff_table, expect header row.
