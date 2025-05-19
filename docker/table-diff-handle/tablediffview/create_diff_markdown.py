@@ -87,10 +87,9 @@ def create_diff_rows(
     for changed_row, reference_row in zip_longest(changed_list, reference_list):
         # Skip csv header
         if (
-            changed_row
-            and reference_row
-            and len(changed_row) < 2
-            and len(reference_row) < 2
+            changed_row is None
+            and reference_row is None
+            or (len(changed_row) < 2 and len(reference_row) < 2)
         ):
             continue
         diff_row = []
