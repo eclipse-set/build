@@ -11,7 +11,7 @@ runs:
         extended: true
     
     - name: Setup Ruby
-      uses: ruby/setup-ruby@eaecf785f6a34567a6d97f686bbb7bccc1ac1e5c # v1.237.0
+      uses: ruby/setup-ruby@a4f838919020b587bb8dd4493e8881bb113d3be7 # v1.246.0
       with:
         ruby-version: 3.2
     
