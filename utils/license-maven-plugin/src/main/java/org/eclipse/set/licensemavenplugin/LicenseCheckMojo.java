@@ -49,9 +49,9 @@ import org.eclipse.dash.licenses.context.LicenseToolModule;
 import org.eclipse.dash.licenses.maven.AbstractArtifactFilteringMojo;
 import org.eclipse.dash.licenses.maven.MavenProxySettings;
 import org.eclipse.dash.licenses.maven.MavenSettings;
+import org.eclipse.dash.licenses.projects.ProjectService;
 import org.eclipse.dash.licenses.review.CreateReviewRequestCollector;
 import org.eclipse.dash.licenses.review.GitLabSupport;
-import org.eclipse.dash.licenses.validation.EclipseProjectIdValidator;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 import com.google.inject.Guice;
@@ -72,6 +72,13 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 	 */
 	@Parameter(property = "dash.projectId")
 	private String projectId;
+	
+
+	/**
+	 * Optionally specify the Eclipse Project repository that is the source of the request
+	 */
+	@Parameter(property = "dash.repo")
+	private String repo;
 
 	/**
 	 * Output a summary to the given file. If not specified, then a dependencies
@@ -187,7 +194,7 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 		// Validate the user-given dash license tool settings
 		ISettings settings;
 		try {
-			settings = new MavenSettings(batch, foundationApi, clearlyDefinedApi, licenses, confidence, projectId, iplabToken);
+			settings = new MavenSettings(batch, foundationApi, clearlyDefinedApi, licenses, confidence, projectId, iplabToken, repo);
 		} catch (IllegalArgumentException e) {
 			throw new MojoExecutionException("Invalid setting: " + e.getMessage());
 		}
@@ -212,12 +219,8 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 			String source = a.getGroupId().startsWith(P2_GROUPID_PREFIX) ? "orbit" : "mavencentral";
 			// TODO could get duplicates here if two artifact coords differ only by
 			// classifier
-			IContentId id = M2EDependencyMapper.mapDependency(ContentId.getContentId(type, source, a.getGroupId(), a.getArtifactId(), a.getVersion()));
-			id = SETSnapshotDropper.mapDependency(id);
-			deps.add(id);
+			deps.add(ContentId.getContentId(type, source, a.getGroupId(), a.getArtifactId(), a.getVersion()));
 		});
-		
-		deps.addAll(ExtraDependencies.getExtraDependencies());
 
 		List<IResultsCollector> collectors = new ArrayList<>();
 
@@ -231,7 +234,7 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 		Injector injector = Guice.createInjector(new LicenseToolModule(settings, createProxySettings()));
 		
 		if (settings.getProjectId() != null) {
-			var validator = injector.getInstance(EclipseProjectIdValidator.class);
+			var validator = injector.getInstance(ProjectService.class);
 			if (!validator.validate(settings.getProjectId(), message -> getLog().error(message))) {
 				throw new MojoExecutionException("Invalid project id.");
 			}
