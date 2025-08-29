@@ -47,6 +47,10 @@ jobs:
       uses: eclipse-set/build/.github/actions/check-dependencies@main
 
     - name: Push to Github
+      # Because the Eclipse Dash License Tool oft failed.
+      # Therefore this step should be run anyways to avoid create Tag fail
+      # https://github.com/eclipse-dash/dash-licenses/issues/448
+      if: always()
       run: |
         git config user.name 'eclipse-set-bot'
         git config user.email 'set-bot@eclipse.org'
