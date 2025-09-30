@@ -48,11 +48,11 @@ jobs:
         git config user.name 'eclipse-set-bot'
         git config user.email 'set-bot@eclipse.org'
         git status
+        git branch -D release/${{ inputs.version }} || true
         git checkout -b release/${{ inputs.version }}
-        git push -u origin release/${{ inputs.version }}
         git status
         git add -A
         git commit --allow-empty -m "Prepare development branch for ${{ inputs.version }}" 
         git status
-        git push
+        git push -f -u origin release/${{ inputs.version }}
         git status
