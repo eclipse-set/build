@@ -54,5 +54,5 @@ jobs:
         git add -A
         git commit --allow-empty -m "Prepare development branch for ${{ inputs.version }}" 
         git status
-        git push -f -u origin release/${{ inputs.version }}
+        git push -u origin release/${{ inputs.version }}
         git status
