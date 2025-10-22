@@ -35,6 +35,8 @@ jobs:
       run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+$'
       
     - uses: actions/checkout@v5
+      with:
+        token: ${{ secrets.GH_BOT_TOKEN }}
 
     - name: Bump versions
       uses: eclipse-set/build/.github/actions/set-version@main
