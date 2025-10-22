@@ -92,7 +92,7 @@ jobs:
         git config user.email 'set-bot@eclipse.org'
         git status
         git add -A
-        git commit --allow-empty -m "Prepare development branch for ${{ inputs.version }}" 
+        git commit --allow-empty -m "Prepare development branch for ${{ steps.compute-new-version.outputs.new }}" 
         git status
         git push || true
         git status
