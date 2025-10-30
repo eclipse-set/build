@@ -57,6 +57,7 @@ jobs:
         git status
   
   prepare-development-version:
+    if: ${{ inputs.development-version }}
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -68,7 +69,6 @@ jobs:
         exit 1
 
     - name: Validate version format
-      if: ${{ inputs.development-version }}
       run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+$'
 
     - name: Compute new version
