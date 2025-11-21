@@ -13,7 +13,7 @@ jobs:
   update-DEPENDENCIES:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         token: ${{ secrets.GH_BOT_TOKEN }}
 

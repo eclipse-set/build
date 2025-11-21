@@ -34,7 +34,7 @@ jobs:
     - name: Validate version format
       run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+\.\d+(\.[a-z0-9]+)?$'
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         token: ${{ secrets.GH_BOT_TOKEN != null && secrets.GH_BOT_TOKEN || github.token }}
 
