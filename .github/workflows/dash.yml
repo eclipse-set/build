@@ -100,7 +100,7 @@ jobs:
           GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
 
       # Hide outdated License comments
-      - uses: int128/hide-comment-action@a30d551065e4231e6d7a671bb5ce884f9ee6417b # v1.43.0
+      - uses: int128/hide-comment-action@9cdf7fd49089308931b20966baee90f4aadb9f6e # v1.48.0
         if: always()
         with:
           ends-with: |
