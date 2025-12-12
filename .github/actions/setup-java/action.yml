@@ -17,7 +17,7 @@ runs:
         maven-version: 3.9.9
 
     - name: Cache local Maven repository
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.m2/repository
         # re-cache on changes in the pom and target files
