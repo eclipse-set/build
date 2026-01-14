@@ -42,6 +42,7 @@ jobs:
         run: |
           if [[ "${{inputs.version}}" == "" ]]; then
             currentVersion=$(mvn help:evaluate -Dexpression='project.version' -q -DforceStdout)
+            echo "CURRENT_VERSION=$currentVersion" >> $GITHUB_ENV
             IFS='.' read -r MAJOR MINOR PATCH <<< "$currentVersion"
             NEW_VERSION="$MAJOR.$((MINOR+1)).0"
             echo "DEPLOY_VERSION=$NEW_VERSION" >> $GITHUB_ENV
@@ -50,12 +51,6 @@ jobs:
           echo "DEPLOY_VERSION=${{inputs.version}}" >> $GITHUB_ENV
             mvn versions:set -DnewVersion=${{inputs.version}} -DgenerateBackupPoms=false
           fi
-
-      - name: Deploy Plugin
-        working-directory: utils/${{ inputs.plugin }}
-        run: mvn -T1.5C -U clean deploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Push to Github
         env:
@@ -68,6 +63,27 @@ jobs:
           git commit --allow-empty -m "Deploy ${{inputs.plugin}}:${{ env.DEPLOY_VERSION }}" 
           git status
           git push
+<<<<<<< Updated upstream
+=======
+          git status
+
+      - name: Deploy Plugin
+        working-directory: utils/${{ inputs.plugin }}
+        run: mvn -T1.5C -U clean deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Reset Version
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mvn version:set -DnewVersion=${{env.CURRENT_VERSION}} -DgenerateBackupPoms=false
+          git status
+          git add -A
+          git commit --allow-empty -m "Revert bump version ${{inputs.plugin}}"
+          git push
+>>>>>>> Stashed changes
           git status
 
 
