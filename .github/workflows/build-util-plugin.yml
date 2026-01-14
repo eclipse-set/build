@@ -32,6 +32,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GH_BOT_TOKEN != null && secrets.GH_BOT_TOKEN || github.token }}
     
       - name: Setup Java
         uses: eclipse-set/build/.github/actions/setup-java@main
