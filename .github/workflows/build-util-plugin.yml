@@ -64,11 +64,10 @@ jobs:
           git config user.name 'eclipse-set-bot'
           git config user.email 'set-bot@eclipse.org'
           git status
-          git status
           git add -A
           git commit --allow-empty -m "Deploy ${{inputs.plugin}}:${{ env.DEPLOY_VERSION }}" 
           git status
-          git push -f -u origin release/${{ inputs.version }}
+          git push
           git status
 
 
