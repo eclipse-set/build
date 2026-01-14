@@ -1,0 +1,58 @@
+# This workflow will deploy utils maven plugin
+name: 'Deployment the util MavenPlugin'
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: 'Plugin to Deploy'
+        required: true
+        default: 'license-maven-plugin'
+        type: choice
+        options:
+          - license-maven-plugin
+          - release-notes-maven-plugin
+          - rootfiles-maven-plugin
+      version:
+        description: 'Deploy version <major>.<minor>.<patch>'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Validate version format
+        if: inputs.version != ''
+        run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+\.\d+(\.[a-z0-9]+)?$'
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+    
+      - name: Setup Java
+        uses: eclipse-set/build/.github/actions/setup-java@main
+
+      - name: Version bump
+        working-directory: utils/${{inputs.plugin}}
+        shell: bash
+        run: |
+          if [[ "${{inputs.version}}" == "" ]]; then
+            currentVersion=$(mvn help:evaluate -Dexpression='project.version' -q -DforceStdout)
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$currentVersion"
+            NEW_VERSION="$MAJOR.$((MINOR+1)).0"
+            mvn versions:set -DnewVersion=$NEW_VERSION -DgenerateBackupPoms=false
+          else
+            mvn versions:set -DnewVersion=${{inputs.version}} -DgenerateBackupPoms=false
+          fi
+
+      - name: Deploy Plugin
+        working-directory: utils/${{ inputs.plugin }}
+        run: mvn -T1.5C -U clean deploy
+
+
+        
+
