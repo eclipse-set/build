@@ -63,8 +63,6 @@ jobs:
           git commit --allow-empty -m "Deploy ${{inputs.plugin}}:${{ env.DEPLOY_VERSION }}" 
           git status
           git push
-<<<<<<< Updated upstream
-=======
           git status
 
       - name: Deploy Plugin
@@ -83,7 +81,6 @@ jobs:
           git add -A
           git commit --allow-empty -m "Revert bump version ${{inputs.plugin}}"
           git push
->>>>>>> Stashed changes
           git status
 
 
