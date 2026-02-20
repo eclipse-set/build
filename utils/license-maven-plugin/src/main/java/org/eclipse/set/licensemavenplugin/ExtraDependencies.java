@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,7 +41,7 @@ public class ExtraDependencies {
 		File input = path.toFile();
 		if (input.exists()) {
 			if ("package-lock.json".equals(input.getName())) {
-				return new PackageLockFileReader(new FileInputStream(input));
+				return new PackageLockFileReader(new InputStreamReader(new FileInputStream(input)));
 			}
 			return new FlatFileReader(new FileReader(input));
 		} else {
