@@ -4,7 +4,7 @@ import re
 from tablediffview.config import CONFIG
 from itertools import zip_longest
 from os import listdir, path
-from os.path import isfile
+from os.path import isfile, isdir
 from tabulate import tabulate
 
 
