@@ -39,8 +39,11 @@ def main():
     if not os.path.exists(diff_md_dir):
         os.makedirs(diff_md_dir)
     for diff in diff_mds:
+        subDir = f"{diff_md_dir}/{diff.test_file}"
+        if not os.path.exists(subDir):
+            os.makedirs(subDir)
         with open(
-            f"{diff_md_dir}/{diff.test_file}_{diff.table}_diff.md",
+            f"{subDir}/{diff.table}_diff.md",
             "w",
             encoding="utf-8",
         ) as out:
