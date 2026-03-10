@@ -27,7 +27,7 @@ def create_diffs(diff_dir: str) -> list[diffmarkdown]:
     mds: list[diffmarkdown] = []
     for test_file, diff_tables in test_file_diffs.items():
         for table_name in diff_tables:
-            print("Create diff view for: " + table_name)
+            print(f"Create diff view for: {test_file}/{table_name}")
             with open(
                 csv_path_pattern.format(diff_dir, test_file, table_name, "current"),
                 encoding="utf-8",
@@ -57,15 +57,25 @@ def get_changed_test_files(diff_dir: str) -> dict[str, set[str]]:
     result = {}
     csv_current_pattern = re.compile(".+_current.csv")
     for dir in listdir(diff_dir):
-        tables = set()
+        
         test_file_dir = f"{diff_dir}/{dir}"
+        refDirs = set()
+        
         if not isfile(test_file_dir):
+            refDirs.add(dir)
             for f in listdir(test_file_dir):
-                if isfile(f"{test_file_dir}/{f}") and csv_current_pattern.match(f):
-                    tables.add(str(f).replace("_current.csv", ""))
-            result[f"{str(dir)}"] = tables
-    return result
+                subDir = f"{test_file_dir}/{f}"
+                if isdir(subDir):
+                    refDirs.add(f"{dir}/{f}")
 
+        for subDir in refDirs:
+            tables = set()
+            fullPath = f"{diff_dir}/{subDir}"
+            for f in listdir(fullPath):
+                if isfile(f"{fullPath}/{f}") and csv_current_pattern.match(f):
+                    tables.add(str(f).replace("_current.csv", ""))            
+            result[f"{str(subDir)}"] = tables
+    return result
 
 def create_diff_table(changed_list, reference_list):
     changed_list = list(csv.reader(changed_list, delimiter=";", skipinitialspace=True))
