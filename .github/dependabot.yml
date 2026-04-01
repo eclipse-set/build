@@ -25,5 +25,8 @@ updates:
   schedule:
     interval: daily
   rebase-strategy: disabled
-
-
+- package-ecosystem: pip
+  directory: "/docker"
+  schedule:
+    interval: daily
+  rebase-strategy: disabled
