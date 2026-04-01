@@ -122,7 +122,7 @@ def remove_old_comments(issue_number: str):
     )
     if get_comments_response.status_code != 200:
         raise ValueError(f"Not exsist Issue/PR with number {issue_number}")
-    comment_pattern = re.compile((r"<h2>Table difference view: \w* - \w*<\/h2>"))
+    comment_pattern = re.compile((r"<h2>Table difference view: \w*/\w* - \w*<\/h2>"))
     comments = get_comments_response.json()
     for comment in comments:
         if comment and comment["id"]:
