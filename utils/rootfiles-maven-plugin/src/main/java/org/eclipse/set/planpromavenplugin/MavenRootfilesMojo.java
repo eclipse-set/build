@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -247,15 +249,23 @@ public class MavenRootfilesMojo extends AbstractMojo {
 	}
 
 	private Optional<SnapshotVersion> getRootArtifactVersion(Versioning versioning) {
-		return versioning.getSnapshotVersions().stream().filter(Objects::nonNull).filter(snapShotVersion -> {
+		List<SnapshotVersion> versions = versioning.getSnapshotVersions().stream().filter(Objects::nonNull).filter(snapShotVersion -> {
 			String key = "";
-			if (!snapShotVersion.getClassifier().isBlank()) {
+			if (!snapShotVersion.getClassifier().isEmpty()) {
 				key = snapShotVersion.getClassifier() + "." + snapShotVersion.getExtension();
 			} else {
 				key = snapShotVersion.getExtension();
 			}
 			return key.endsWith("root.zip");
-		}).findFirst();
+		}).sorted((a,b) -> {
+			BigDecimal updatedTimeA = new BigDecimal(a.getUpdated());
+			BigDecimal updatedTimeB = new BigDecimal(b.getUpdated());
+			return updatedTimeB.compareTo(updatedTimeA);
+		}).collect(Collectors.toList());
+		if (versions.isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(versions.get(0));
 	}
 
 	private void unzip(File zipFile, File outDir) throws IOException {
