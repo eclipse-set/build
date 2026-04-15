@@ -122,7 +122,7 @@ def remove_old_comments(issue_number: str):
     )
     if get_comments_response.status_code != 200:
         raise ValueError(f"Not exsist Issue/PR with number {issue_number}")
-    comment_pattern = re.compile((r"<h2>Table difference view: \w*/\w* - \w*<\/h2>"))
+    comment_pattern = re.compile(r"<h2>Table difference view: \w*/\w* - \w*<\/h2>")
     comments = get_comments_response.json()
     for comment in comments:
         if comment and comment["id"]:
@@ -131,6 +131,7 @@ def remove_old_comments(issue_number: str):
                 delete_response = __github_api_resquest(
                     method="delete", access_path=f"issues/comments/{comment['id']}"
                 )
+                print("Delete comment success")
                 if delete_response.status_code != 204:
                     print(f"Delete comment with number: \"{comment['id']}\" failed")
                     raise SystemError(delete_response.json())
