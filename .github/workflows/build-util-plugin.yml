@@ -31,7 +31,7 @@ jobs:
         run: echo '${{ inputs.version }}' | grep -P '^\d+\.\d+\.\d+(\.[a-z0-9]+)?$'
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GH_BOT_TOKEN != null && secrets.GH_BOT_TOKEN || github.token }}
     
