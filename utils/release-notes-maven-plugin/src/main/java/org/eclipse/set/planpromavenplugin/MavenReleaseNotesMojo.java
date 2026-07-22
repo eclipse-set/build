@@ -14,12 +14,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -41,26 +44,46 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 	private static String versionNumberReg = "^##\\s*\\d+\\.\\d+(\\.\\d+)?";
 
 	@SuppressWarnings("boxing")
-	private static String createDocHeader(final int index, final String versionNumber) {
-		return String.format("---\ntitle: \"%s\"\nanchor: \"%s\"\nWeight: %d\n---\n", versionNumber, versionNumber,
-				index + 1);
+	private static String createDocHeader(final int index,
+			final String versionNumber) {
+		return String.format(
+				"---\ntitle: \"%s\"\nanchor: \"%s\"\nWeight: %d\n---\n",
+				versionNumber, versionNumber, index + 1);
 	}
 
-	private static Map<String, String> transformDoc(final Map<String, List<String>> releaseNotes) {
+	private static Map<String, String> transformDoc(
+			final Map<String, List<String>> releaseNotes) {
 		final Map<String, String> result = new LinkedHashMap<>();
 		int index = 0;
-		for (final Entry<String, List<String>> notes : releaseNotes.entrySet()) {
-			result.put(notes.getKey(), createDocHeader(index, notes.getKey()) + String.join("\n", notes.getValue()));
+		for (final Entry<String, List<String>> notes : releaseNotes
+				.entrySet()) {
+			result.put(notes.getKey(), createDocHeader(index, notes.getKey())
+					+ String.join("\n", notes.getValue()));
 			index++;
 		}
 		return result;
 	}
 
-	@Parameter(property = "notesPath", required = false)
-	private String notesPath;
+	private static Comparator<String> versionComparator() {
+		return (a, b) -> {
+			final String[] splitA = a.split("\\.");
+			final String[] splitB = b.split("\\.");
+			for (int i = 0; i < splitA.length; i++) {
+				final int compare = Integer.compare(Integer.parseInt(splitB[i]),
+						Integer.parseInt(splitA[i]));
+				if (compare != 0) {
+					return compare;
+				}
+			}
+			return 0;
+		};
+	}
 
 	@Parameter(property = "notesDir", required = false)
 	private String notesDir;
+
+	@Parameter(property = "notesPath", required = false)
+	private String notesPath;
 
 	@Parameter(property = "outDir", required = true)
 	private String outDir;
@@ -85,18 +108,20 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 
 	private Map<String, List<String>> readReleaseNote() throws IOException {
 		getLog().info("Read Version notes");
-
-		final Map<String, List<String>> result = new LinkedHashMap<>();
+		final TreeMap<String, List<String>> result = new TreeMap<>(
+				versionComparator());
 		Iterator<Path> versionNotes = null;
 		if (notesDir != null) {
-			versionNotes = Files.walk(Paths.get(notesDir)).filter(file -> !file.equals(Paths.get(notesDir))).iterator();
+			versionNotes = Files.walk(Paths.get(notesDir))
+					.filter(file -> !file.equals(Paths.get(notesDir)))
+					.iterator();
 		} else if (notesPath != null) {
 			versionNotes = Stream.of(Paths.get(notesPath)).iterator();
 		} else {
 			throw new IllegalArgumentException("Missing path of news");
 		}
 		while (versionNotes.hasNext()) {
-			Path next = versionNotes.next();
+			final Path next = versionNotes.next();
 			try (final BufferedReader reader = Files.newBufferedReader(next)) {
 				String currentVersion = "";
 				final Pattern pattern = Pattern.compile(versionNumberReg);
@@ -116,10 +141,13 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 				}
 			}
 		}
+		result.forEach(
+				(k, v) -> Collections.sort(v, Collections.reverseOrder()));
 		return result;
 	}
 
-	private void writeFile(final String versionNumber, final String doc) throws IOException {
+	private void writeFile(final String versionNumber, final String doc)
+			throws IOException {
 		final Path path = Paths.get(outDir, versionNumber, "_index.md");
 		if (!Files.exists(path.getParent())) {
 			path.getParent().toFile().mkdirs();
