@@ -141,8 +141,6 @@ public class MavenReleaseNotesMojo extends AbstractMojo {
 				}
 			}
 		}
-		result.forEach(
-				(k, v) -> Collections.sort(v, Collections.reverseOrder()));
 		return result;
 	}
 
