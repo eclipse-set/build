@@ -24,8 +24,10 @@ on:
         required: false
         default: "technology.set"
       repo:
-        description: 'The repository, which license vetting is requested',
-        required: true
+        description: 'The repository, which license vetting is requested'
+        type: string
+        required: false
+        default: "eclipse-set/set"
       pom:
         description: "The path to the pom.xml"
         type: string
@@ -100,7 +102,7 @@ jobs:
           request-review: ${{ env.request-review }}
           project-id: ${{ inputs.projectId }}
           pom: ${{ inputs.pom }}
-          repo: ${{ inputs-repo }}
+          repo: ${{ inputs.repo }}
         env:
           GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
 
