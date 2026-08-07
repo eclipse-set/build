@@ -24,8 +24,10 @@ on:
         required: false
         default: "technology.set"
       repo:
-        description: 'The repository, which license vetting is requested',
-        required: true
+        description: 'The repository, which license vetting is requested'
+        type: string
+        required: false
+        default: "eclipse-set/set"
       pom:
         description: "The path to the pom.xml"
         type: string
