@@ -102,7 +102,7 @@ jobs:
           request-review: ${{ env.request-review }}
           project-id: ${{ inputs.projectId }}
           pom: ${{ inputs.pom }}
-          repo: ${{ inputs-repo }}
+          repo: ${{ inputs.repo }}
         env:
           GITLAB_API_TOKEN: ${{ secrets.gitlabAPIToken }}
 
