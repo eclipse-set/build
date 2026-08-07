@@ -151,6 +151,9 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 	 */
 	@Parameter(property = "dash.proxy")
 	private String proxy;
+	
+	@Parameter(property ="dash.repo")
+	private String repo;
 
 	/**
 	 * The Maven session.
@@ -187,7 +190,7 @@ public class LicenseCheckMojo extends AbstractArtifactFilteringMojo {
 		// Validate the user-given dash license tool settings
 		ISettings settings;
 		try {
-			settings = new MavenSettings(batch, foundationApi, clearlyDefinedApi, licenses, confidence, projectId, iplabToken);
+			settings = new MavenSettings(batch, foundationApi, clearlyDefinedApi, licenses, confidence, projectId, iplabToken, repo);
 		} catch (IllegalArgumentException e) {
 			throw new MojoExecutionException("Invalid setting: " + e.getMessage());
 		}
