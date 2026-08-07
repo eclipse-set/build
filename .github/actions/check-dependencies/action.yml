@@ -22,6 +22,10 @@ inputs:
     description: ""
     required: false
     default: ""
+  repo:
+    description: ""
+    required: false
+    default: ""
   pom:
     description: "pom path"
     required: false
