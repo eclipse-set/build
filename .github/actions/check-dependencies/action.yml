@@ -47,6 +47,9 @@ runs:
         if [ ${{ inputs.project-id }} ]; then
           mvnArgs+=" -Ddash.projectId=${{ inputs.project-id }}"
         fi
+        if [ ${{ inputs.project-id }} ]; then
+          mvnArgs+=" -Ddash.repo=${{ inputs.repo }}"
+        fi
         if [ ${{ inputs.request-review }} ]; then
           mvn ${mvnArgs} -Ddash.iplab.token=$GITLAB_API_TOKEN
         else
