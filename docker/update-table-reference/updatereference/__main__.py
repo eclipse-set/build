@@ -10,8 +10,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--issueNumber", required=True, type=str)
     parser.add_argument("--commentBody", required=True, type=str)
+    parser.add_argument("--refPath", required=True, type=str)
     issue_number = str(parser.parse_args().issueNumber)
     commentBody = str(parser.parse_args().commentBody)
+    ref_path = str(parser.parse_args().refPath)
     issue_info = get_issue_info(issue_number)
     if not issue_info or not issue_info.branch_name:
         raise SystemError("Can't find relevant pull request/branch")
@@ -21,11 +23,11 @@ def main():
     if not new_reference_zip:
         raise SystemError("Can't download the new reference artifact")
     table_to_update = commentBody.replace("/update-table-reference", "").strip()
-    update_table_reference(new_reference_zip, table_to_update)
+    update_table_reference(new_reference_zip, table_to_update, ref_path)
 
 
-def update_table_reference(new_reference_zip, table_to_update: str = None):
-    reference_path = f"{CONSTANT.REPO_LOCAL_PATH}/{CONSTANT.SET_TABLE_REFERENCE_PATH}"
+def update_table_reference(new_reference_zip, table_to_update: str = None, ref_path: str = None):
+    reference_path = f"{CONSTANT.REPO_LOCAL_PATH}/{ref_path}"
     try:
         buffer = BytesIO()
         with ZipFile(buffer, "w") as new_zip:

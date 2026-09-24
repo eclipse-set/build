@@ -19,7 +19,9 @@ runs:
     - name: Cache local Maven repository
       uses: actions/cache@v6
       with:
-        path: ~/.m2/repository
+        path: |
+          ~/.m2/repository/
+          ~/.cache/tycho/
         # re-cache on changes in the pom and target files
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml', '**/*.target') }}
         restore-keys: |

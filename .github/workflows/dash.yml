@@ -164,7 +164,8 @@ jobs:
 
               if(reviewRequested)
               {
-                const reviewSummaryFile = "target/dash/review-summary"
+                const reviewSummaryFile = process.env.GITHUB_WORKSPACE + "/target/dash/review-summary"
+                core.info("Read review summary at " + reviewSummaryFile)
                 let reviews = "";
                 if (fs.existsSync(reviewSummaryFile)) {
                   reviews = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();

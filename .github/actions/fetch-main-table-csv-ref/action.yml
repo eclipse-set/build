@@ -4,8 +4,9 @@ inputs:
   repo:
     description: "Execute repository"
     required: true
-env:
-  REFERENCE_PATH: java/bundles/org.eclipse.set.swtbot/test_rest/table_reference
+  refPath:
+    description: "Reference path for the main table CSV"
+    required: true
 
 runs:
   using: "composite"
@@ -58,7 +59,7 @@ runs:
         import os
         import shutil
 
-        reference_path = 'java/bundles/org.eclipse.set.swtbot/test_res/table_reference'
+        reference_path = '${{ inputs.refPath }}'
         for root, _, files in os.walk('main-reference-csv'):
             for file in files:
                 if file.endswith('_reference.csv'):
