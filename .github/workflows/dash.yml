@@ -164,7 +164,7 @@ jobs:
 
               if(reviewRequested)
               {
-                const reviewSummaryFile = "target/dash/review-summary"
+                const reviewSummaryFile = "java/target/dash/review-summary"
                 let reviews = "";
                 if (fs.existsSync(reviewSummaryFile)) {
                   reviews = fs.readFileSync(reviewSummaryFile, { encoding: 'utf8' }).trim();
