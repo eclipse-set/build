@@ -12,7 +12,8 @@ on:
       target:
         description: 'Path to target platform'
         type: string
-        required: true
+        required: false
+        default: ''
       pom:
         description: 'Path to pom.xml. Defaults to pom.xml in working directory'
         type: string

@@ -6,7 +6,8 @@ inputs:
     required: true
   target:
     description: 'Path to target platform'
-    required: true
+    required: false
+    default: ''
   pom:
     description: 'Path to pom.xml'
     required: false
@@ -29,6 +30,7 @@ runs:
         sudo apt-get install -y xmlstarlet
 
     - name: Update target platform
+      if: ${{ inputs.target != '' }}
       shell: bash
       run: |
         xmlstarlet ed --inplace \
