@@ -4,8 +4,11 @@ inputs:
   repo:
     description: "Execute repository"
     required: true
-env:
-  REFERENCE_PATH: java/bundles/org.eclipse.set.swtbot/test_rest/table_reference
+  parentDir:
+    description: "The directory, which contains all table test"
+    required: true
+  referenceDir:
+    description: "The name of directory, which contains the references"
 
 runs:
   using: "composite"
@@ -55,20 +58,45 @@ runs:
       working-directory: ${{ github.workspace }}
       run: |
         python -c "
-        import os
-        import shutil
+          import os
+          import shutil
 
-        reference_path = 'java/bundles/org.eclipse.set.swtbot/test_res/table_reference'
-        for root, _, files in os.walk('main-reference-csv'):
+          def collect_references_dir(parent_dir: str, reference_dir_name: str, references_dir_list: list[str] = []) -> list[str]:
+            if not os.path.exists(parent_dir) or not os.path.isdir(parent_dir) or not os.listdir(parent_dir):
+              return []
+
+            for sub_dir in os.listdir(parent_dir):
+              sub_dir_path = f"{parent_dir}/{sub_dir}"
+              if os.path.exists(sub_dir_path) and os.path.isdir(sub_dir_path):
+                if sub_dir == reference_dir_name:
+                  references_dir_list.append(sub_dir_path)
+                else:
+                  collect_references_dir(sub_dir_path, reference_dir_name, references_dir_list)
+            return references_dir_list
+
+          reference_dirs = collect_references_dir("${{inputs.parentDir}}", "${{inputs.referenceDir}}")
+          if not reference_dirs:
+            raise SystemError("Can't find table reference dirs")
+
+          for root, _, files in os.walk('main-reference-csv'):
             for file in files:
-                if file.endswith('_reference.csv'):
-                    continue
-                source_path = os.path.join(root, file)
-                parent_dest_path = f'{reference_path}{root.replace(\"main-reference-csv\", \"\")}'
-                dest_path = f'{parent_dest_path}/{file.replace(\"_current.csv\", \"_reference.csv\")}'
-                if not os.path.exists(parent_dest_path):
-                    os.makedirs(parent_dest_path)
-                # Datei verschieben
-                shutil.move(source_path, dest_path)
-                print(f'Moved: {source_path} -> {dest_path}')
+              if not file.endswith('_current.csv'):
+                continue
+              source_path = os.path.join(root, file)
+              ref_path = source_path.replace('main-reference-csv', '').replace('_current.csv', '_reference.csv')
+              dest_path_founded = False
+              for table_reference_dir in reference_dirs:
+                dest_path = f"{table_reference_dir}/{ref_path}"
+                if os.path.exists(dest_path):
+                  dest_path_founded = True
+                  shutil.move(source_path, dest_path)
+                  print(f'Moved: {source_path} -> {dest_path}')
+              
+              if not dest_path_founded:
+                for table_reference_dir in reference_dirs:
+                  dest_path = f"{table_reference_dir}/{ref_path}"
+                  if not os.path.exists(dest_path):
+                    os.makedirs(dest_path)
+                  shutil.copy(source_path, dest_path)
+                  print(f'Copy: {source_path} -> {dest_path}')
         "

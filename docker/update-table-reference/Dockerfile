@@ -1,12 +1,11 @@
-FROM python:3.12-bullseye
+FROM python:3.12-trixie
 
 ADD . /update-table-reference
 RUN pip install /update-table-reference
 
 # Install Github CLI
 RUN set -ex; \
-    apt-get update ; \
-    apt-get install -y --no-install-recommends \
+    apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
 	zip \
