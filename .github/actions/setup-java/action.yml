@@ -8,6 +8,7 @@ runs:
       with:
         java-version: "21"
         distribution: temurin
+        check-latest: true
         server-id: set-github
 
     - name: Setup Maven
