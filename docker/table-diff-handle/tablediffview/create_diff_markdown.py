@@ -117,12 +117,13 @@ def create_diff_rows(
 
 
 def is_table_header_row(changed_row: list[str], reference_row: list[str]) -> bool:
+    row_count_regex = re.compile(r"(\d+)(?:\.\.(\d+))?")
     changed_first_cell = next(iter(changed_row), None)
     reference_first_cell = next(iter(reference_row), None)
     # The first cell of table data row is always a number
     if not changed_first_cell and not reference_first_cell:
         return True
-    return not changed_first_cell.isnumeric() and not reference_first_cell.isnumeric()
+    return not row_count_regex.match(changed_first_cell) and not row_count_regex.match(reference_first_cell)
 
 
 def create_diff_cells(

@@ -92,7 +92,7 @@ def get_last_run(issue_info: issueInfo, run_id: str = None):
         branch_name = issue_info.branch_name
         get_workflow_run_response = github_api_request(
             method="get",
-            access_path=f"actions/workflows/{CONSTANT.BUILD_SET_WORK_FLOW_ID}/runs",
+            access_path=f"actions/workflows/{CONSTANT.TEST_WORK_FLOW_ID}/runs",
             params={"branch": urllib.parse.quote(branch_name)},
         )
         if get_workflow_run_response.status_code != 200:
@@ -143,3 +143,4 @@ def github_api_request(
         json=content,
         params=params,
     )
+
